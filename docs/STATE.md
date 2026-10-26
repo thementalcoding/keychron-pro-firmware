@@ -7,7 +7,8 @@ maintainers and AI agents.
 
 | | |
 |---|---|
-| Release | **v1.0.0**, 29 assets (26 standalone model ZIPs + full ZIP + manifest + SHA256SUMS) |
+| Release | **v1.0.0**, 29 assets (26 standalone model ZIPs + full ZIP + manifest + SHA256SUMS); tag `ba672b4` |
+| Tag build | Build (QMK) green with full base SHA `c8b2b237b4ef09765e48cbb5c1fdb0afd164289f` |
 | Repository | https://github.com/thementalcoding/keychron-pro-firmware |
 | Release URL | https://github.com/thementalcoding/keychron-pro-firmware/releases/tag/v1.0.0 |
 | Upstream PR | https://github.com/Keychron/qmk_firmware/pull/529 — OPEN, MERGEABLE, 6 commits, 33 files |
@@ -19,12 +20,15 @@ maintainers and AI agents.
 ## Repository history (main)
 
 ```
-release: v1.0.0 — 26 CKBT51 models, 95 images, bilingual docs, recovery and hardware-test index
-chore: drop Python caches and disable scorecard workflow (upstream gcr.io outage)
-fix(patch): include final q1_pro name fix and q6_pro factory-reset removal
+ba672b4 fix(release): standalone per-model ZIPs, absolute doc links, pinned base SHA
+c3a86f8 docs: add AI context, schemas, handoff state and tree consistency checks
+3a13cec fix(patch): include final q1_pro name fix and q6_pro factory-reset removal
+3c8e54a chore: drop Python caches and disable scorecard workflow (upstream gcr.io outage)
+d7cf2fc release: v1.0.0 — 26 CKBT51 models, 95 images, bilingual docs, recovery and hardware-test index
 ```
 
-- `v1.0.0` → `3a13cec`.
+- Tag `v1.0.0` points to `ba672b4`; repackaging only changed the release assets, the
+  firmware binaries did not change.
 - `tested-index` branch is generated (`TESTED.md`, `docs/tested.json`).
 - `main` protection: `checks` required (strict), linear history, no force-push,
   no deletions, PR not mandatory.
@@ -45,20 +49,17 @@ fix(patch): include final q1_pro name fix and q6_pro factory-reset removal
 - Release v1.0.0 with standalone per-model ZIPs (README + model SHA256SUMS +
   binaries), a full-tree ZIP and absolute documentation links; one model ZIP
   verified end to end by `tools/make_release_assets.py`.
+- Release repackaged: per-model standalone ZIPs (`firmware/<model>/` + model-only
+  SHA256SUMS), absolute doc links, full-tree ZIP; 95/95 verified, tag build green.
 - PR #529 updated to 26 models, 2 extra commits pushed, comment added.
 
 ## Pending
 
-1. **Test review**: verify the `Build (QMK)` run triggered by tag `v1.0.0`,
-   validate all 29 assets and the 95 binaries, propose test improvements.
-2. **Commit AI documentation** (`AGENTS.md`, `docs/AI_CONTEXT.md`,
-   `docs/SCHEMAS.md`, `llms.txt`, `.github/copilot-instructions.md`,
-   `tools/verify_repo.py`) and add `verify_repo.py` to CI.
-3. Apply the test improvements that come out of the review.
-4. Wait for Keychron workflow approval + human review on PR #529.
-5. Field validation (2–3 days of normal Bluetooth use); if bursts reappear, run
-   `tools/bt_tune.sh capture` and check the disconnect reason.
-6. Hardware backlog (§ below). Do not touch without a unit.
+1. **Keychron PR #529**: workflow approval + human review.
+2. **Field validation** (2–3 days); if bursts reappear, run
+   `tools/bt_tune.sh capture`.
+3. **Hardware backlog** (R3-02/03/04/05, q1 A9); do not touch without a unit.
+4. Optional: CI build matrix (95 variants), unit tests for the parser.
 
 ## Backlog (analysed, not implemented)
 
