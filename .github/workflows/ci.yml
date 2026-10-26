@@ -45,6 +45,9 @@ jobs:
             echo "no manifest present"
           fi
 
+      - name: Docs and tree consistency
+        run: python3 tools/verify_repo.py
+
       - name: Shell syntax
         run: bash -n tools/*.sh
 

@@ -1,0 +1,50 @@
+# llms.txt — machine-friendly entry point
+
+> Community QMK firmware for 26 Keychron Pro wireless keyboards (CKBT51):
+> Bluetooth link fixes and 133 Hz report rate. Unofficial. One unit
+> hardware-tested (K13 Pro ISO RGB); other images are compiled and verified only.
+
+## Start here
+
+- [AGENTS.md](AGENTS.md): hard rules and definition of done for contributors/AI.
+- [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md): architecture, invariants, backlog.
+- [docs/SCHEMAS.md](docs/SCHEMAS.md): manifest, build status, test index, issue form contract.
+- [README.md](README.md) / [README.es.md](README.es.md): user documentation (EN/ES).
+- [docs/RECOVERY.md](docs/RECOVERY.md): bad-flash recovery.
+
+## Firmware
+
+- Source of truth: [patches/k13-audit.patch](patches/k13-audit.patch)
+  (33 files under `keyboards/keychron/`, base `Keychron/qmk_firmware` @ `c8b2b23`).
+- Published images: [firmware/manifest.json](firmware/manifest.json),
+  [SHA256SUMS](SHA256SUMS), [firmware/](firmware/).
+- Release: https://github.com/thementalcoding/keychron-pro-firmware/releases/tag/v1.0.0
+- Upstream proposal: https://github.com/Keychron/qmk_firmware/pull/529
+  (fork `thementalcoding/qmk_firmware`, branch `k13-pro-bt-fixes`).
+
+## Verification
+
+```bash
+python3 tools/verify_bins.py
+python3 tools/verify_manifest.py
+sha256sum -c SHA256SUMS
+python3 tools/check_sanitization.py
+```
+
+## Audit
+
+- [docs/AUDIT.md](docs/AUDIT.md) — root cause and design.
+- [docs/GAMA_AUDIT.md](docs/GAMA_AUDIT.md) — 26-board range audit.
+- [docs/PER_BOARD_REVIEW.md](docs/PER_BOARD_REVIEW.md) — per-board review and verdicts.
+- [docs/PR-529.md](docs/PR-529.md) — upstream PR notes.
+
+## Testing and reporting
+
+- [docs/TESTING.md](docs/TESTING.md) — how to report in 30 seconds.
+- Issue form: `.github/ISSUE_TEMPLATE/hardware_test.yml`.
+- Live index: branch `tested-index` (`TESTED.md`, `docs/tested.json`).
+
+## Optional
+
+- [docs/STATE.md](docs/STATE.md) — project state snapshot for resuming work.
+- [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md).

@@ -113,7 +113,7 @@ k1_pro.c:228 · k2_pro.c:205 · k3_pro.c:210 · k4_pro.c:205 · k5_pro.c:260 · 
 
 ## Anexo
 
-- `audits/ckbt51_boards.csv` — 67 filas: `teclado;variantes;pila;rate;reconnect;ventana_ms;hc595;debounce`.
+- `docs/ckbt51_boards.csv` — 67 filas: `teclado;variantes;pila;rate;reconnect;ventana_ms;hc595;debounce`.
 
 ## Metodología y límites
 
