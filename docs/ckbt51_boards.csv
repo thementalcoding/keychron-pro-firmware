@@ -1,0 +1,68 @@
+teclado;variantes;pila;rate;reconnect;ventana_ms;hc595;debounce
+k0_max;1;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k10_max;4;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k10_pro;6;CKBT51;133;60;1000;HC595-own(uint32_t;direct=1);sym_defer_g
+k10_version_2;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k11_max;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k11_pro;4;CKBT51;133;60;1000;HC595-own(uint16_t;direct=0);sym_defer_g
+k12_pro;2;CKBT51;133;60;1000;HC595-own(uint16_t;direct=0);sym_defer_g
+k13_max;4;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k13_pro;4;CKBT51;133;60;5000;HC595-own(uint16_t);sym_defer_g(+opt-in commented)
+k14_pro;2;CKBT51;133;60;1000;HC595-own(uint16_t;direct=0);sym_defer_g
+k15_max;4;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k15_pro;2;CKBT51;133;60;1000;HC595-common(SIZE_T auto;END=15(default));sym_defer_g
+k17_max;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k17_pro;4;CKBT51;133;60;1000;HC595-own(SIZE_T);sym_defer_g
+k1_max;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k1_pro;4;CKBT51;133;60;1000;HC595-own(uint16_t;direct=1);sym_defer_g
+k1_version_6;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k2_max;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k2_pro;6;CKBT51;133;60;1000;HC595-own(uint16_t);sym_defer_g
+k2_version_3;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k3_max;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k3_pro;6;CKBT51;133;60;1000;HC595-own(uint16_t;direct=1);sym_defer_g
+k3_version_3;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k4_pro;4;CKBT51;133;60;1000;HC595-own(uint16_t;direct=2);sym_defer_g
+k4_version_3;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k5_max;4;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k5_pro;6;CKBT51;133;60;1000;HC595-own(uint32_t;direct=0);sym_defer_g
+k5_version_2;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k6_pro;5;CKBT51;133;60;1000;HC595-own(uint16_t);sym_defer_g
+k7_max;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k7_pro;4;CKBT51;133;60;1000;HC595-own(uint16_t;direct=1);sym_defer_g
+k8_max;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k8_pro;6;CKBT51;133;60;1000;HC595-own(uint16_t);sym_defer_g
+k8_version_2;6;LKBT51-SPI;-;-;-;direct;sym_defer_g
+k9_pro;6;CKBT51;133;60;1000;HC595-own(uint16_t);sym_defer_g
+q0_max;1;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q10_max;2;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q10_pro;2;CKBT51;133;60;1000;HC595-common(SIZE_T auto;END=15);sym_defer_g
+q12_max;1;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q13_max;1;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q13_pro;2;CKBT51;133;60;1000;HC595-common(SIZE_T auto;END=18);sym_defer_g
+q14_max;1;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q14_pro;2;CKBT51;133;60;1000;HC595-common(SIZE_T auto;END=18);sym_defer_g
+q15_max;1;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q1_max;3;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q1_pro;3;CKBT51;133;60;1000;HC595-own(uint16_t);sym_defer_g
+q2_max;2;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q2_pro;2;CKBT51;133;60;1000;HC595-own(uint16_t);sym_defer_g
+q3_max;2;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q3_pro;5;CKBT51;133;60;1000;HC595-own(uint32_t);sym_defer_g
+q4_pro;2;CKBT51;133;60;1000;HC595-common(SIZE_T auto;END=13);sym_defer_g
+q5_max;2;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q5_pro;2;CKBT51;133;60;1000;HC595-common(SIZE_T auto;END=19);sym_defer_g
+q60_max;1;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q65_max;1;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q6_max;2;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q6_pro;2;CKBT51;133;60;1000;HC595-common(SIZE_T auto;END=20);sym_defer_g
+q8_max;1;LKBT51-SPI;-;-;-;direct;sym_defer_g
+q8_pro;2;CKBT51;133;60;1000;HC595-common(SIZE_T auto;END=14);sym_defer_g
+v10_max;1;LKBT51-SPI;-;-;-;direct;sym_defer_g
+v1_max;3;LKBT51-SPI;-;-;-;direct;sym_defer_g
+v2_max;2;LKBT51-SPI;-;-;-;direct;sym_defer_g
+v3_max;2;LKBT51-SPI;-;-;-;direct;sym_defer_g
+v4_max;1;LKBT51-SPI;-;-;-;direct;sym_defer_g
+v5_max;2;LKBT51-SPI;-;-;-;direct;sym_defer_g
+v6_max;2;LKBT51-SPI;-;-;-;direct;sym_defer_g
+v8_max;1;LKBT51-SPI;-;-;-;direct;sym_defer_g

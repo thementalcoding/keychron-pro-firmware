@@ -1,0 +1,144 @@
+name: Hardware test report
+description: Report that a firmware image booted (or failed) on your keyboard
+title: "[test] "
+labels: ["hardware-test"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing! This takes about 30 seconds and keeps the
+        compatibility table honest.
+
+        **Do not include MAC addresses, serial numbers, hostnames or personal
+        paths.** Reports without the exact SHA-256 cannot be counted.
+
+        Not flashed yet? Read the [README](../blob/main/README.md) and the
+        [recovery guide](../blob/main/docs/RECOVERY.md) first.
+
+  - type: dropdown
+    id: model
+    attributes:
+      label: Model
+      description: The keyboard model you flashed.
+      options:
+        - K1 Pro
+        - K2 Pro
+        - K3 Pro
+        - K4 Pro
+        - K5 Pro
+        - K6 Pro
+        - K7 Pro
+        - K8 Pro
+        - K9 Pro
+        - K10 Pro
+        - K11 Pro
+        - K12 Pro
+        - K13 Pro
+        - K14 Pro
+        - K15 Pro
+        - K17 Pro
+        - Q1 Pro
+        - Q2 Pro
+        - Q3 Pro
+        - Q4 Pro
+        - Q5 Pro
+        - Q6 Pro
+        - Q8 Pro
+        - Q10 Pro
+        - Q13 Pro
+        - Q14 Pro
+        - Other (not listed / Max series)
+    validations:
+      required: true
+
+  - type: input
+    id: variant
+    attributes:
+      label: Variant / layout
+      description: As printed on the box or in `lsusb` (e.g. ISO RGB, ANSI white, Knob ANSI RGB).
+      placeholder: "e.g. ISO RGB"
+    validations:
+      required: true
+
+  - type: input
+    id: pid
+    attributes:
+      label: USB PID (optional)
+      description: Output of `lsusb | grep -i 3434` in cable mode.
+      placeholder: "e.g. 3434:02d1"
+
+  - type: input
+    id: file
+    attributes:
+      label: Firmware file
+      description: Path or file name of the image you flashed.
+      placeholder: "firmware/k13_pro/iso-rgb/keychron_k13_pro_iso_rgb_via.bin"
+    validations:
+      required: true
+
+  - type: input
+    id: sha256
+    attributes:
+      label: Firmware SHA-256
+      description: "`sha256sum <file>` / `Get-FileHash <file> -Algorithm SHA256`."
+      placeholder: "64 hexadecimal characters"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options:
+        - Works — keyboard usable, no repeated keys
+        - Works with minor issues
+        - Problems — see notes
+    validations:
+      required: true
+
+  - type: dropdown
+    id: transport
+    attributes:
+      label: Tested over
+      options:
+        - Bluetooth only
+        - USB only
+        - Both USB and Bluetooth
+    validations:
+      required: true
+
+  - type: input
+    id: host
+    attributes:
+      label: Host OS and Bluetooth adapter
+      description: e.g. "Linux 6.12, Intel AX210", "macOS 15, built-in", "Windows 11, Intel AX211".
+      placeholder: "OS + adapter"
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: What you did (typing, VIA edit, sleep/wake, reconnect, RGB) and anything that went wrong.
+      render: text
+    validations:
+      required: false
+
+  - type: input
+    id: duration
+    attributes:
+      label: How long have you been using it?
+      placeholder: "e.g. 2 days, 3 hours"
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Before submitting
+      options:
+        - label: I flashed the image whose SHA-256 I pasted above.
+          required: true
+        - label: I read the warnings and know this is an unofficial build.
+          required: true
+        - label: I removed MAC addresses, hostnames and personal paths from this report.
+          required: true

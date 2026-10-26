@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+"""dfu-suffix clone, DFU 1.1a compliant (16-byte suffix).
+   dfu-suffix.py [-v VID] [-p PID] [-s bcdDevice] -a <file>
+    Layout (LE): bcdDevice idProduct idVendor bcdDFU(0x0100) 'UFD' bLength(0x10) CRC32(~crc32(12))
+    NOTE: 0x0100 = raw image. 0x011A marks a ST DfuSe container (.dfu) and makes
+    dfu-util refuse raw downloads ("This is a DfuSe file, not meant for raw download").
+   Also strips the legacy 14-byte suffix produced by rev1 of this wrapper."""
+import argparse
+import binascii
+import struct
+import sys
+
+SUF_FMT = "<HHHH3sB"
+
+
+def proper_suffix(data):
+    if len(data) < 16:
+        return False
+    s = data[-16:]
+    return s[8:11] == b"UFD" and s[11] == 0x10
+
+
+def legacy_suffix(data):
+    if len(data) < 14:
+        return False
+    return data[-8] == 0x03 and data[-7:-4] == b"UFD"
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-v", "--vid", default="0", type=lambda x: int(x, 16))
+    ap.add_argument("-p", "--pid", default="0", type=lambda x: int(x, 16))
+    ap.add_argument("-s", "--bcdDevice", default="ffff", type=lambda x: int(x, 16))
+    ap.add_argument("-c", dest="check", action="store_true")
+    ap.add_argument("-a", dest="add")
+    ap.add_argument("-V", action="store_true")
+    args = ap.parse_args()
+
+    if args.V:
+        print("dfu-suffix (python clone, DFU 1.1a) 2.0")
+        return 0
+
+    with open(args.add, "rb") as f:
+        data = f.read()
+
+    if proper_suffix(data):
+        crc = struct.unpack("<I", data[-4:])[0]
+        ok = crc == ((~binascii.crc32(data[:-4])) & 0xFFFFFFFF)
+        if args.check:
+            return 0 if ok else 78
+        if ok:
+            return 0
+        data = data[:-16]
+    elif legacy_suffix(data):
+        data = data[:-14]
+    if args.check:
+        return 79
+
+    suf = struct.pack(SUF_FMT, args.bcdDevice & 0xFFFF, args.pid & 0xFFFF, args.vid & 0xFFFF, 0x0100, b"UFD", 0x10)
+    crc = (~binascii.crc32(data + suf)) & 0xFFFFFFFF
+    with open(args.add, "wb") as f:
+        f.write(data + suf + struct.pack("<I", crc))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

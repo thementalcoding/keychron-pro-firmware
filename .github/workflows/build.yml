@@ -1,0 +1,88 @@
+name: Build (QMK)
+
+# Rebuilds the patched firmware from Keychron's own tree and proves the patch
+# still applies. Runs weekly (upstream drift detector), on demand, and on tags.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1"
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    container: ghcr.io/qmk/qmk_cli@sha256:b7d7fa8fb4432b569931de5ad59098cb788f440ed61a62c5126746b71aee0f4a # :latest at 2026-10-26
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Ensure git is available
+        run: command -v git >/dev/null || (apt-get update && apt-get install -y --no-install-recommends git)
+
+      - name: Fetch Keychron QMK tree at the pinned base commit
+        run: |
+          BASE=c8b2b23
+          git clone --filter=blob:none --no-checkout https://github.com/Keychron/qmk_firmware.git /qmk
+          cd /qmk
+          git fetch --depth 1 origin "$BASE"
+          git checkout "$BASE"
+          git submodule update --init --depth 1 lib/chibios lib/chibios-contrib lib/printf lib/lufa
+
+      - name: Apply audit patch
+        run: cd /qmk && git apply --verbose "$GITHUB_WORKSPACE/patches/k13-audit.patch"
+
+      - name: Build K13 Pro ISO RGB (via keymap)
+        run: |
+          cd /qmk
+          qmk config user.qmk_home=/qmk
+          qmk compile -kb keychron/k13_pro/iso/rgb -km via
+
+      - name: Build K6 Pro ANSI RGB (shared-code spot check)
+        run: |
+          cd /qmk
+          qmk compile -kb keychron/k6_pro/ansi/rgb -km via || \
+            qmk compile -kb keychron/k6_pro/ansi/rgb -km default
+
+      - name: Sanity-check produced firmware
+        run: |
+          python3 "$GITHUB_WORKSPACE/tools/verify_bins.py" \
+            /qmk/.build/keychron_k13_pro_iso_rgb_via.bin
+
+      - name: Compare with published binary (informational)
+        continue-on-error: true
+        run: |
+          PUBLISHED="firmware/k13_pro/iso-rgb/keychron_k13_pro_iso_rgb_via.bin"
+          if [ ! -f "$PUBLISHED" ]; then
+            echo "published binary absent; skipping comparison"
+            exit 0
+          fi
+          python3 - "$PUBLISHED" <<'PY'
+          import hashlib
+          import sys
+
+          def sha(path):
+              return hashlib.sha256(open(path, "rb").read()).hexdigest()
+
+          built = sha("/qmk/.build/keychron_k13_pro_iso_rgb_via.bin")
+          repo = sha(sys.argv[1])
+          print("built :", built)
+          print("repo  :", repo)
+          print("identical:", built == repo)
+          PY
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: keychron_k13_pro_iso_rgb_via
+          path: /qmk/.build/keychron_k13_pro_iso_rgb_via.bin
+          if-no-files-found: error

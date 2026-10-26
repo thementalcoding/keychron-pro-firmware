@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a hardware test (30 seconds)
+    url: https://github.com/thementalcoding/keychron-pro-firmware/issues/new?template=hardware_test.yml
+    about: Flashed a build? Tell us whether it booted and what model/variant it was.
+  - name: Questions and community discussion
+    url: https://github.com/thementalcoding/keychron-pro-firmware/discussions
+    about: Ask questions, share results or discuss ideas.
+  - name: Recovery / bad flash
+    url: https://github.com/thementalcoding/keychron-pro-firmware/blob/main/docs/RECOVERY.md
+    about: Keyboard not detected, wrong variant, no keys — read this first.
+  - name: Upstream firmware proposal (Keychron)
+    url: https://github.com/Keychron/qmk_firmware/pull/529
+    about: The upstream pull request proposing these changes to Keychron.

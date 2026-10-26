@@ -1,0 +1,56 @@
+name: Feature request
+description: Suggest an improvement to the firmware, tooling or documentation
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check the README "Known limitations" section and existing issues
+        first. Do not include MAC addresses, hostnames, user paths or IP addresses.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Bluetooth link / report rate
+        - Low-power / battery
+        - Keymap / VIA integration
+        - Flashing / recovery tooling
+        - Measurement tooling
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is the current behaviour and why is it a problem?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like to happen? Mention hardware evidence if you have any.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Variant/PID, host environment, logs (redacted), related upstream issues.
+    validations:
+      required: false

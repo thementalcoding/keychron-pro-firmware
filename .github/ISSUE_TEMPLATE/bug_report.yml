@@ -1,0 +1,117 @@
+name: Bug report
+description: Report a firmware or tooling problem
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. **Please do not paste MAC addresses, serial
+        numbers, hostnames, usernames, file paths or IP addresses** — redact them
+        before attaching logs.
+
+        If you simply want to say "it works", use the
+        [hardware test form](https://github.com/thementalcoding/keychron-pro-firmware/issues/new?template=hardware_test.yml)
+        instead.
+
+  - type: dropdown
+    id: model
+    attributes:
+      label: Model
+      options:
+        - K1 Pro
+        - K2 Pro
+        - K3 Pro
+        - K4 Pro
+        - K5 Pro
+        - K6 Pro
+        - K7 Pro
+        - K8 Pro
+        - K9 Pro
+        - K10 Pro
+        - K11 Pro
+        - K12 Pro
+        - K13 Pro
+        - K14 Pro
+        - K15 Pro
+        - K17 Pro
+        - Q1 Pro
+        - Q2 Pro
+        - Q3 Pro
+        - Q4 Pro
+        - Q5 Pro
+        - Q6 Pro
+        - Q8 Pro
+        - Q10 Pro
+        - Q13 Pro
+        - Q14 Pro
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: input
+    id: variant
+    attributes:
+      label: Variant, keymap and USB PID
+      description: e.g. "ISO RGB, via, 3434:02d1" (`lsusb | grep 3434`).
+      placeholder: "variant / keymap / PID"
+    validations:
+      required: true
+
+  - type: input
+    id: sha256
+    attributes:
+      label: SHA-256 of the flashed binary
+      description: Output of `sha256sum firmware/<model>/<variant>/<file>.bin`; identifies the exact build.
+      placeholder: "e.g. eb0657f6..."
+    validations:
+      required: true
+
+  - type: input
+    id: host
+    attributes:
+      label: Host environment
+      description: OS, kernel version and Bluetooth adapter/driver.
+      placeholder: "e.g. Linux 6.12, Intel AX210, BlueZ 5.87"
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Symptom
+      description: What happens, over Bluetooth or USB, and when it started.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Frequency
+      options:
+        - Always
+        - Daily
+        - Weekly
+        - Rare / once
+    validations:
+      required: true
+
+  - type: textarea
+    id: btmon
+    attributes:
+      label: Captures and logs (optional)
+      description: |
+        Attach or paste btmon output if relevant. **Redact personal data first**
+        (MAC addresses, hostnames, paths). Logs with unredacted identifiers may be
+        edited or removed.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: readme
+    attributes:
+      label: Before submitting
+      options:
+        - label: I read the README (flashing, recovery and known limitations).
+          required: true

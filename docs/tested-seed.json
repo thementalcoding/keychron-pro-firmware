@@ -1,0 +1,13 @@
+[
+  {
+    "model": "k13_pro",
+    "model_label": "K13 Pro",
+    "variant": "ISO RGB",
+    "pid": "0x02D1",
+    "firmware": "keychron_k13_pro_iso_rgb_via.bin",
+    "sha256": "e478f0636a613ddde03e17b8c5ac4f8d037255eb45142d2ba27be33ffe0c921f",
+    "host": "Linux 6.12 \u00b7 Intel AX210",
+    "date": "2026-10-26",
+    "source": "maintainer"
+  }
+]

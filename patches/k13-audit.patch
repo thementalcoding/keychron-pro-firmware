@@ -1,0 +1,1610 @@
+diff --git a/keyboards/keychron/bluetooth/bluetooth.c b/keyboards/keychron/bluetooth/bluetooth.c
+index 2e280c7318..aef0c79635 100644
+--- a/keyboards/keychron/bluetooth/bluetooth.c
++++ b/keyboards/keychron/bluetooth/bluetooth.c
+@@ -38,9 +38,8 @@ static uint8_t host_index = 0;
+ static uint8_t led_state  = 0;
+ 
+ extern bluetooth_transport_t bluetooth_transport;
+-static bluetooth_state_t     bt_state                  = BLUETOOTH_RESET;
+-static bool                  pincodeEntry              = false;
+-uint8_t                      bluetooth_report_protocol = true;
++static bluetooth_state_t     bt_state     = BLUETOOTH_RESET;
++static bool                  pincodeEntry = false;
+ 
+ /* declarations */
+ uint8_t bluetooth_keyboard_leds(void);
+@@ -145,6 +144,12 @@ void bluetooth_connect(void) {
+     /*  Work around empty report after wakeup, which leads to reconneect/disconnected loop */
+     if (battery_is_critical_low() || sync_timer_read32() == 0) return;
+ 
++    /* Rate limit: each command blocks ~3ms in the transport wake pulses and churns the
++     * module, so don't fire more than one connect command per 500ms */
++    static uint32_t last_connect_time = 0;
++    if (last_connect_time != 0 && sync_timer_elapsed32(last_connect_time) < 500) return;
++    last_connect_time = sync_timer_read32();
++
+     bluetooth_transport.connect_ex(0, 0);
+     bt_state = BLUETOOTH_RECONNECTING;
+ }
+@@ -268,17 +273,19 @@ static void bluetooth_exit_pin_code_entry(void) {
+     bluetooth_exit_pin_code_entry_kb();
+ }
+ 
+-__attribute__((weak)) void bluetooth_enter_reset_kb(uint8_t reason){};
+-__attribute__((weak)) void bluetooth_enter_discoverable_kb(uint8_t host_idx){};
+-__attribute__((weak)) void bluetooth_enter_reconnecting_kb(uint8_t host_idx){};
+-__attribute__((weak)) void bluetooth_enter_connected_kb(uint8_t host_idx){};
+-__attribute__((weak)) void bluetooth_enter_disconnected_kb(uint8_t host_idx){};
++__attribute__((weak)) void bluetooth_enter_reset_kb(uint8_t reason) {};
++__attribute__((weak)) void bluetooth_enter_discoverable_kb(uint8_t host_idx) {};
++__attribute__((weak)) void bluetooth_enter_reconnecting_kb(uint8_t host_idx) {};
++__attribute__((weak)) void bluetooth_enter_connected_kb(uint8_t host_idx) {};
++__attribute__((weak)) void bluetooth_enter_disconnected_kb(uint8_t host_idx) {};
+ __attribute__((weak)) void bluetooth_enter_pin_code_entry_kb(void) {}
+-__attribute__((weak)) void bluetooth_exit_pin_code_entry_kb(void){};
++__attribute__((weak)) void bluetooth_exit_pin_code_entry_kb(void) {};
+ 
+ /*  */
++/* Boot vs report protocol is handled by the bluetooth module itself, there is
++ * nothing to apply on the host side */
+ static void bluetooth_hid_set_protocol(bool report_protocol) {
+-    bluetooth_report_protocol = false;
++    (void)report_protocol;
+ }
+ 
+ uint8_t bluetooth_keyboard_leds(void) {
+@@ -414,6 +421,14 @@ void bluetooth_event_queue_task(void) {
+                 bluetooth_enter_discoverable(event.params.hostIndex);
+                 break;
+             case EVT_RECONNECTING:
++#ifndef DISABLE_REPORT_BUFFER
++                /* Drop stale reports that were queued while the link was down to
++                 * avoid blasting the whole backlog right after a reconnect */
++                if (!report_buffer_is_empty()) {
++                    dprintf("Flush report buffer on reconnecting\n");
++                    report_buffer_init();
++                }
++#endif
+                 bluetooth_enter_reconnecting(event.params.hostIndex);
+                 break;
+             case EVT_DISCONNECTED:
+@@ -453,7 +468,7 @@ void bluetooth_task(void) {
+ }
+ 
+ void send_string_task(void) {
+-    if (get_transport() == TRANSPORT_BLUETOOTH && bluetooth_get_state()== BLUETOOTH_CONNECTED) {
++    if (get_transport() == TRANSPORT_BLUETOOTH && bluetooth_get_state() == BLUETOOTH_CONNECTED) {
+         bluetooth_transport.task();
+ #ifndef DISABLE_REPORT_BUFFER
+         report_buffer_task();
+diff --git a/keyboards/keychron/bluetooth/ckbt51.c b/keyboards/keychron/bluetooth/ckbt51.c
+index 76e6cab388..dedeb0bca1 100644
+--- a/keyboards/keychron/bluetooth/ckbt51.c
++++ b/keyboards/keychron/bluetooth/ckbt51.c
+@@ -145,7 +145,7 @@ void ckbt51_init(bool wakeup_from_low_power_mode) {
+     gpio_write_pin_high(CKBT51_INT_INPUT_PIN);
+ }
+ 
+-void ckbt51_send_cmd(uint8_t* payload, uint8_t len, bool ack_enable, bool retry) {
++void ckbt51_send_cmd(uint8_t *payload, uint8_t len, bool ack_enable, bool retry) {
+     static uint8_t sn = 0;
+     uint8_t        i;
+     uint8_t        pkt[PACKET_MAX_LEN] = {0};
+@@ -156,12 +156,33 @@ void ckbt51_send_cmd(uint8_t* payload, uint8_t len, bool ack_enable, bool retry)
+ 
+     systime_t start = 0;
+ 
++#ifdef CKBT51_FAST_WAKE
++    /* Non-blocking fast path: the module only shuts its uart after 3s of inactivity
++     * (see CKBT51_WAKE_WAIT_TIME above), so if it was addressed less than
++     * CKBT51_FAST_WAKE_HOLD_MS ago the INT wake pulses can be skipped while still
++     * sending the packet normally. Disabled unless CKBT51_FAST_WAKE is defined. */
++#    ifndef CKBT51_FAST_WAKE_HOLD_MS
++#        define CKBT51_FAST_WAKE_HOLD_MS 50
++#    endif
++    static systime_t last_cmd_time = 0;
++
++    if (last_cmd_time == 0 || chTimeI2US(chVTTimeElapsedSinceX(last_cmd_time)) >= CKBT51_FAST_WAKE_HOLD_MS * 1000) {
++        for (i = 0; i < 3; i++) {
++            gpio_write_pin(CKBT51_INT_INPUT_PIN, i % 2);
++            start = chVTGetSystemTime();
++            while (chTimeI2US(chVTTimeElapsedSinceX(start)) < CKBT51_WAKE_WAIT_TIME / 3) {
++            };
++        }
++    }
++    last_cmd_time = chVTGetSystemTime();
++#else
+     for (i = 0; i < 3; i++) {
+         gpio_write_pin(CKBT51_INT_INPUT_PIN, i % 2);
+         start = chVTGetSystemTime();
+         while (chTimeI2US(chVTTimeElapsedSinceX(start)) < CKBT51_WAKE_WAIT_TIME / 3) {
+         };
+     }
++#endif
+     gpio_write_pin_high(CKBT51_INT_INPUT_PIN);
+ 
+     uint16_t checksum = 0;
+@@ -182,7 +203,7 @@ void ckbt51_send_cmd(uint8_t* payload, uint8_t len, bool ack_enable, bool retry)
+     sdWrite(&WT_DRIVER, pkt, i);
+ }
+ 
+-void ckbt51_send_keyboard(uint8_t* report) {
++void ckbt51_send_keyboard(uint8_t *report) {
+     uint8_t i = 0;
+     memset(payload, 0, PACKET_MAX_LEN);
+ 
+@@ -193,7 +214,7 @@ void ckbt51_send_keyboard(uint8_t* report) {
+     ckbt51_send_cmd(payload, i, true, false);
+ }
+ 
+-void ckbt51_send_nkro(uint8_t* report) {
++void ckbt51_send_nkro(uint8_t *report) {
+     uint8_t i = 0;
+     memset(payload, 0, PACKET_MAX_LEN);
+ 
+@@ -229,7 +250,7 @@ void ckbt51_send_system(uint16_t report) {
+     ckbt51_send_cmd(payload, i, true, false);
+ }
+ 
+-void ckbt51_send_mouse(uint8_t* report) {
++void ckbt51_send_mouse(uint8_t *report) {
+     uint8_t i = 0;
+     memset(payload, 0, PACKET_MAX_LEN);
+ 
+@@ -255,7 +276,7 @@ void ckbt51_send_conn_evt_ack(void) {
+     ckbt51_send_cmd(payload, i, false, false);
+ }
+ 
+-void ckbt51_become_discoverable(uint8_t host_idx, void* param) {
++void ckbt51_become_discoverable(uint8_t host_idx, void *param) {
+     uint8_t i = 0;
+     memset(payload, 0, PACKET_MAX_LEN);
+ 
+@@ -264,7 +285,7 @@ void ckbt51_become_discoverable(uint8_t host_idx, void* param) {
+     if (param == NULL) {
+         param = &default_pairing_param;
+     }
+-    pairing_param_t* p = (pairing_param_t*)param;
++    pairing_param_t *p = (pairing_param_t *)param;
+ 
+     payload[i++] = CKBT51_CMD_PAIRING; // Cmd type
+     payload[i++] = host_idx;           // Host Index
+@@ -326,7 +347,7 @@ void ckbt51_read_state_reg(uint8_t reg, uint8_t len) {
+     ckbt51_send_cmd(payload, i, false, false);
+ }
+ 
+-void ckbt51_get_info(module_info_t* info) {
++void ckbt51_get_info(module_info_t *info) {
+     uint8_t i = 0;
+     memset(payload, 0, PACKET_MAX_LEN);
+ 
+@@ -334,7 +355,7 @@ void ckbt51_get_info(module_info_t* info) {
+     ckbt51_send_cmd(payload, i, false, false);
+ }
+ 
+-void ckbt51_set_param(module_param_t* param) {
++void ckbt51_set_param(module_param_t *param) {
+     uint8_t i = 0;
+     memset(payload, 0, PACKET_MAX_LEN);
+ 
+@@ -345,7 +366,7 @@ void ckbt51_set_param(module_param_t* param) {
+     ckbt51_send_cmd(payload, i, true, false);
+ }
+ 
+-void ckbt51_get_param(module_param_t* param) {
++void ckbt51_get_param(module_param_t *param) {
+     uint8_t i = 0;
+     memset(payload, 0, PACKET_MAX_LEN);
+ 
+@@ -354,7 +375,7 @@ void ckbt51_get_param(module_param_t* param) {
+     ckbt51_send_cmd(payload, i, false, false);
+ }
+ 
+-void ckbt51_set_local_name(const char* name) {
++void ckbt51_set_local_name(const char *name) {
+     uint8_t i   = 0;
+     uint8_t len = strlen(name);
+     memset(payload, 0, PACKET_MAX_LEN);
+@@ -402,10 +423,11 @@ void ckbt51_radio_test(uint8_t channel) {
+     ckbt51_send_cmd(payload, i, false, false);
+ }
+ 
+-void ckbt51_dfu_tx(uint8_t rsp, uint8_t* data, uint8_t len, uint8_t sn) {
+-    uint16_t checksum        = 0;
+-    uint8_t  buf[RAW_EPSIZE] = {0};
+-    uint8_t  i               = 0;
++void ckbt51_dfu_tx(uint8_t rsp, uint8_t *data, uint8_t len, uint8_t sn) {
++    uint8_t buf[RAW_EPSIZE] = {0};
++    uint8_t i               = 0;
++    uint8_t chunk           = len > 25 ? 25 : len;
++    uint8_t off             = chunk;
+ 
+     buf[i++] = 0x03;
+     buf[i++] = 0xAA;
+@@ -414,25 +436,23 @@ void ckbt51_dfu_tx(uint8_t rsp, uint8_t* data, uint8_t len, uint8_t sn) {
+     buf[i++] = ~len;
+     buf[i++] = sn;
+     buf[i++] = rsp;
+-    memcpy(&buf[i], data, len);
+-    i += len;
+-
+-    for (uint8_t k = 0; k < i; k++)
+-        checksum += buf[i];
++    /* The first packet can only carry the 25 data bytes that fit RAW_EPSIZE */
++    memcpy(&buf[i], data, chunk);
+ 
+     raw_hid_send(buf, RAW_EPSIZE);
+ 
+-    if (len > 25) {
+-        i = 0;
++    /* The rest is sent as continuation packets prefixed with 0x03 */
++    while (off < len) {
+         memset(buf, 0, RAW_EPSIZE);
+-        buf[i++] = 0x03;
+-        memcpy(&buf[i], data + 25, len - 25);
+-        i = i + len - 25;
++        buf[0] = 0x03;
++        chunk  = len - off > RAW_EPSIZE - 1 ? RAW_EPSIZE - 1 : len - off;
++        memcpy(&buf[1], data + off, chunk);
+         raw_hid_send(buf, RAW_EPSIZE);
++        off += chunk;
+     }
+ }
+ 
+-void ckbt51_dfu_rx(uint8_t* data, uint8_t length) {
++void ckbt51_dfu_rx(uint8_t *data, uint8_t length) {
+     if (data[0] == 0xAA && (data[1] == 0x55 || data[1] == 0x56) && data[2] == (~data[3] & 0xFF)) {
+         uint16_t checksum    = 0;
+         uint8_t  payload_len = data[2];
+@@ -440,7 +460,7 @@ void ckbt51_dfu_rx(uint8_t* data, uint8_t length) {
+         /* Check payload_len validity */
+         if (payload_len > RAW_EPSIZE - PACKECT_HEADER_LEN) return;
+ 
+-        uint8_t* payload = &data[PACKECT_HEADER_LEN];
++        uint8_t *payload = &data[PACKECT_HEADER_LEN];
+ 
+         for (uint8_t i = 0; i < payload_len - 2; i++) {
+             checksum += payload[i];
+@@ -462,9 +482,9 @@ void ckbt51_dfu_rx(uint8_t* data, uint8_t length) {
+     }
+ }
+ 
+-__attribute__((weak)) void ckbt51_default_ack_handler(uint8_t* data, uint8_t len){};
++__attribute__((weak)) void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {};
+ 
+-static void ack_handler(uint8_t* data, uint8_t len) {
++static void ack_handler(uint8_t *data, uint8_t len) {
+     switch (data[1]) {
+         case CKBT51_CMD_SEND_KB:
+         case CKBT51_CMD_SEND_KB_NKRO:
+@@ -482,6 +502,8 @@ static void ack_handler(uint8_t* data, uint8_t len) {
+                     break;
+                 case ACK_FIFO_FULL_ERROR:
+                     report_buffer_set_retry(10);
++                    // Reset the retry timer so the report isn't re-sent immediately
++                    report_buffer_reset_retry_timer();
+                     break;
+             }
+             break;
+@@ -491,7 +513,7 @@ static void ack_handler(uint8_t* data, uint8_t len) {
+     }
+ }
+ 
+-static void query_rsp_handler(uint8_t* data, uint8_t len) {
++static void query_rsp_handler(uint8_t *data, uint8_t len) {
+     if (data[2]) return;
+ 
+     switch (data[1]) {
+@@ -508,7 +530,7 @@ static void query_rsp_handler(uint8_t* data, uint8_t len) {
+     }
+ }
+ 
+-static void ckbt51_event_handler(uint8_t evt_type, uint8_t* data, uint8_t len, uint8_t sn) {
++static void ckbt51_event_handler(uint8_t evt_type, uint8_t *data, uint8_t len, uint8_t sn) {
+     bluetooth_event_t event = {0};
+ 
+     switch (evt_type) {
+@@ -592,8 +614,10 @@ void ckbt51_task(void) {
+                 for (uint8_t i = 0; i < 3; i++) {
+                     buf[i] = sdGet(&WT_DRIVER);
+                 }
+-                // Check wheather len is valid
+-                if ((~buf[0] & 0xFF) == buf[1]) {
++                // Check wheather len is valid: len counts the bytes that follow the
++                // 3 byte sub-header and are read into the payload buffer below, so it
++                // must stay within [3, PACKET_MAX_LEN], otherwise discard and resync
++                if ((~buf[0] & 0xFF) == buf[1] && buf[0] >= 3 && buf[0] <= PACKET_MAX_LEN) {
+                     len = buf[0];
+                     sn  = buf[2];
+ 
+@@ -604,7 +628,7 @@ void ckbt51_task(void) {
+     }
+ 
+     if (!wait_for_new_pkt && WT_DRIVER.iqueue.q_counter >= len) {
+-        uint8_t buf[32] = {0};
++        uint8_t buf[PACKET_MAX_LEN] = {0};
+ 
+         for (uint8_t i = 0; i < len; i++) {
+             buf[i] = sdGetTimeout(&WT_DRIVER, TIME_IMMEDIATE);
+@@ -619,7 +643,11 @@ void ckbt51_task(void) {
+         if ((checksum & 0xff) == buf[len - 2] && ((checksum >> 8) & 0xff) == buf[len - 1]) {
+             ckbt51_event_handler(buf[0], buf + 1, len - 3, sn);
+         } else {
+-            // TODO: Error handle
++            // Count corrupted frames, dprintf periodically to avoid flooding the console
++            static uint16_t checksum_errors = 0;
++            if (++checksum_errors % 16 == 0) {
++                dprintf("CKBT51: %d checksum errors\n", checksum_errors);
++            }
+         }
+     }
+ }
+diff --git a/keyboards/keychron/bluetooth/lpm.c b/keyboards/keychron/bluetooth/lpm.c
+index 8089c5650d..e3ddd82ab3 100644
+--- a/keyboards/keychron/bluetooth/lpm.c
++++ b/keyboards/keychron/bluetooth/lpm.c
+@@ -31,9 +31,13 @@
+ #include "lpm.h"
+ #include "transport.h"
+ #include "battery.h"
++#include "report_buffer.h"
+ 
+ extern matrix_row_t          matrix[MATRIX_ROWS];
+ extern bluetooth_transport_t bluetooth_transport;
++/* Event queue state (bluetooth.c), not static so it can be checked here */
++extern uint8_t bt_event_queue_head;
++extern uint8_t bt_event_queue_tail;
+ 
+ static uint32_t     lpm_timer_buffer;
+ static bool         lpm_time_up               = false;
+@@ -60,7 +64,9 @@ void lpm_timer_stop(void) {
+     lpm_timer_buffer = 0;
+ }
+ 
+-static inline bool lpm_any_matrix_action(void) { return memcmp(matrix, empty_matrix, sizeof(empty_matrix)); }
++static inline bool lpm_any_matrix_action(void) {
++    return memcmp(matrix, empty_matrix, sizeof(empty_matrix));
++}
+ 
+ /* Implement of entering low power mode and wakeup varies per mcu or platform */
+ __attribute__((weak)) void enter_power_mode(pm_t mode) {}
+@@ -86,7 +92,11 @@ void lpm_task(void) {
+ #ifdef RGB_MATRIX_ENABLE
+         && rgb_matrix_is_driver_shutdown()
+ #endif
+-        && !lpm_any_matrix_action() && !battery_power_on_sample())
++        && !lpm_any_matrix_action() && !battery_power_on_sample()
++#ifndef DISABLE_REPORT_BUFFER
++        && report_buffer_is_empty() && report_buffer_get_retry() == 0
++#endif
++        && bt_event_queue_head == bt_event_queue_tail)
+ 
+         enter_power_mode(LOW_POWER_MODE);
+ }
+diff --git a/keyboards/keychron/bluetooth/report_buffer.c b/keyboards/keychron/bluetooth/report_buffer.c
+index c98cb52a02..c64d1ee9af 100644
+--- a/keyboards/keychron/bluetooth/report_buffer.c
++++ b/keyboards/keychron/bluetooth/report_buffer.c
+@@ -45,8 +45,8 @@ uint8_t report_interval = DEFAULT_REPORT_INVERVAL_MS;
+ static uint32_t report_timer_buffer = 0;
+ uint32_t        retry_time_buffer   = 0;
+ report_buffer_t report_buffer_queue[REPORT_BUFFER_QUEUE_SIZE];
+-uint16_t         report_buffer_queue_head;
+-uint16_t         report_buffer_queue_tail;
++uint16_t        report_buffer_queue_head;
++uint16_t        report_buffer_queue_tail;
+ report_buffer_t kb_rpt;
+ uint8_t         retry = 0;
+ 
+@@ -104,6 +104,11 @@ void report_buffer_set_retry(uint8_t times) {
+     retry = times;
+ }
+ 
++/* Restart the 7ms backoff window used by the retry path of report_buffer_task() */
++void report_buffer_reset_retry_timer(void) {
++    retry_time_buffer = sync_timer_read32();
++}
++
+ void report_buffer_task(void) {
+     if (bluetooth_get_state() == BLUETOOTH_CONNECTED && (!report_buffer_is_empty() || retry) && report_buffer_next_inverval()) {
+         bool pending_data = false;
+diff --git a/keyboards/keychron/bluetooth/report_buffer.h b/keyboards/keychron/bluetooth/report_buffer.h
+index 2829de3f46..5374c7309d 100644
+--- a/keyboards/keychron/bluetooth/report_buffer.h
++++ b/keyboards/keychron/bluetooth/report_buffer.h
+@@ -53,4 +53,5 @@ bool    report_buffer_next_inverval(void);
+ void    report_buffer_set_inverval(uint8_t interval);
+ uint8_t report_buffer_get_retry(void);
+ void    report_buffer_set_retry(uint8_t times);
++void    report_buffer_reset_retry_timer(void);
+ void    report_buffer_task(void);
+diff --git a/keyboards/keychron/k10_pro/k10_pro.c b/keyboards/keychron/k10_pro/k10_pro.c
+index 75377d38f0..89dbe6a6e0 100644
+--- a/keyboards/keychron/k10_pro/k10_pro.c
++++ b/keyboards/keychron/k10_pro/k10_pro.c
+@@ -219,8 +219,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -234,7 +234,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -247,8 +248,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k11_pro/k11_pro.c b/keyboards/keychron/k11_pro/k11_pro.c
+index 4c58106d7d..a392633b63 100644
+--- a/keyboards/keychron/k11_pro/k11_pro.c
++++ b/keyboards/keychron/k11_pro/k11_pro.c
+@@ -136,7 +136,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+ 
+ #if defined(ENCODER_ENABLE)
+ static void encoders_pins_cb(void *param) {
+-    uint8_t index = (uint32_t)param;
++    uint8_t     index = (uint32_t)param;
+     extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
+     encoder_quadrature_handle_inerrupt_read(index);
+ }
+@@ -217,8 +217,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -233,7 +233,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -246,8 +247,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k12_pro/k12_pro.c b/keyboards/keychron/k12_pro/k12_pro.c
+index ca9df20e3e..57808c9906 100644
+--- a/keyboards/keychron/k12_pro/k12_pro.c
++++ b/keyboards/keychron/k12_pro/k12_pro.c
+@@ -202,8 +202,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -218,7 +218,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -231,8 +232,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k13_pro/config.h b/keyboards/keychron/k13_pro/config.h
+index 639aedb4da..c7db344a2f 100644
+--- a/keyboards/keychron/k13_pro/config.h
++++ b/keyboards/keychron/k13_pro/config.h
+@@ -21,8 +21,7 @@
+ #define LED_MATRIX_SLEEP
+ 
+ /* DIP switch */
+-#define DIP_SWITCH_PINS \
+-    { A8 }
++#define DIP_SWITCH_PINS {A8}
+ 
+ /* Caps lock LED  */
+ #define LED_CAPS_LOCK_PIN A0
+@@ -51,19 +50,16 @@
+ 
+ #    define HOST_DEVICES_COUNT 3
+ 
+-#    define BT_INDICATION_LED_PIN_LIST \
+-        { H3, H3, H3 }
++#    define BT_INDICATION_LED_PIN_LIST {H3, H3, H3}
+ #    define BT_INDICATION_LED_ON_STATE 1
+ 
+ #    if defined(RGB_MATRIX_ENABLE) || defined(LED_MATRIX_ENABLE)
+ 
+ #        define SNLED27351_SDB_PIN C14
+ 
+-#        define BT_INDCATION_LED_MATRIX_LIST \
+-            { 17, 18, 19 }
++#        define BT_INDCATION_LED_MATRIX_LIST {17, 18, 19}
+ 
+-#        define BAT_LEVEL_LED_LIST \
+-            { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 }
++#        define BAT_LEVEL_LED_LIST {17, 18, 19, 20, 21, 22, 23, 24, 25, 26}
+ 
+ /* Backlit disable timeout when keyboard is disconnected(unit: second) */
+ #        define DISCONNECTED_BACKLIGHT_DISABLE_TIMEOUT 40
+@@ -75,6 +71,9 @@
+ /* Keep USB connection in blueooth mode */
+ #    define KEEP_USB_CONNECTION_IN_BLUETOOTH_MODE
+ 
++/* LPM tunables, override here to trade idle battery current against first-keystroke wake latency:
++ * RUN_MODE_PROCESS_TIME (default 1000 ms, lpm.h) and LOW_POWER_MODE (default PM_STOP1, bluetooth.h) */
++
+ #endif // KC_BLUETOOTH_ENABLE
+ 
+ /* Emulated EEPROM configuration */
+diff --git a/keyboards/keychron/k13_pro/k13_pro.c b/keyboards/keychron/k13_pro/k13_pro.c
+index f8ee9b69a9..1f321fdb53 100644
+--- a/keyboards/keychron/k13_pro/k13_pro.c
++++ b/keyboards/keychron/k13_pro/k13_pro.c
+@@ -199,8 +199,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -214,7 +214,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -227,8 +228,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k13_pro/rules.mk b/keyboards/keychron/k13_pro/rules.mk
+index 1f9fc1ab58..1f8f0cd972 100644
+--- a/keyboards/keychron/k13_pro/rules.mk
++++ b/keyboards/keychron/k13_pro/rules.mk
+@@ -2,6 +2,9 @@
+ OPT_DEFS += -DCORTEX_ENABLE_WFI_IDLE=TRUE
+ OPT_DEFS += -DNO_USB_STARTUP_CHECK -DENABLE_FACTORY_TEST
+ 
++# Opt-in experiment (keep default sym_defer_g until measured on hardware with medir_polling.py):
++# DEBOUNCE_TYPE = asym_eager_defer_pk lowers press latency but can ghost on the shared HC595 bus
++
+ SRC += matrix.c
+ 
+ include keyboards/keychron/bluetooth/bluetooth.mk
+diff --git a/keyboards/keychron/k14_pro/k14_pro.c b/keyboards/keychron/k14_pro/k14_pro.c
+index 879678e3b8..c4fdb1b51d 100644
+--- a/keyboards/keychron/k14_pro/k14_pro.c
++++ b/keyboards/keychron/k14_pro/k14_pro.c
+@@ -200,8 +200,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -216,7 +216,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -229,8 +230,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k15_pro/k15_pro.c b/keyboards/keychron/k15_pro/k15_pro.c
+index 20c49228eb..a58068c653 100644
+--- a/keyboards/keychron/k15_pro/k15_pro.c
++++ b/keyboards/keychron/k15_pro/k15_pro.c
+@@ -152,7 +152,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+ 
+ #if defined(ENCODER_ENABLE)
+ static void encoders_pins_cb(void *param) {
+-    uint8_t index = (uint32_t)param;
++    uint8_t     index = (uint32_t)param;
+     extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
+     encoder_quadrature_handle_inerrupt_read(index);
+ }
+@@ -234,8 +234,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -250,7 +250,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -263,8 +264,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k17_pro/k17_pro.c b/keyboards/keychron/k17_pro/k17_pro.c
+index 339257e4ff..28e9c2f98d 100644
+--- a/keyboards/keychron/k17_pro/k17_pro.c
++++ b/keyboards/keychron/k17_pro/k17_pro.c
+@@ -152,14 +152,13 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+ 
+ #if defined(KC_BLUETOOTH_ENABLE) && defined(ENCODER_ENABLE)
+ static void encoders_pins_cb(void *param) {
+-    uint8_t index = (uint32_t)param;
++    uint8_t     index = (uint32_t)param;
+     extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
+     encoder_quadrature_handle_inerrupt_read(index);
+ }
+ #endif
+ 
+ void keyboard_post_init_kb(void) {
+-
+     dip_switch_read(true);
+ 
+ #ifdef KC_BLUETOOTH_ENABLE
+@@ -177,7 +176,7 @@ void keyboard_post_init_kb(void) {
+ 
+     power_on_indicator_timer_buffer = sync_timer_read32() | 1;
+     gpio_write_pin(BAT_LOW_LED_PIN, BAT_LOW_LED_PIN_ON_STATE);
+-    //gpio_write_pin(LED_CAPS_LOCK_PIN, LED_PIN_ON_STATE);
++    // gpio_write_pin(LED_CAPS_LOCK_PIN, LED_PIN_ON_STATE);
+ 
+ #    ifdef ENCODER_ENABLE
+     pin_t encoders_pin_a[NUM_ENCODERS] = ENCODER_A_PINS;
+@@ -200,10 +199,10 @@ void matrix_scan_kb(void) {
+             power_on_indicator_timer_buffer = 0;
+ 
+             gpio_write_pin(BAT_LOW_LED_PIN, !BAT_LOW_LED_PIN_ON_STATE);
+-            //if (!host_keyboard_led_state().caps_lock) gpio_write_pin(LED_CAPS_LOCK_PIN, !LED_PIN_ON_STATE);
++            // if (!host_keyboard_led_state().caps_lock) gpio_write_pin(LED_CAPS_LOCK_PIN, !LED_PIN_ON_STATE);
+         } else {
+             gpio_write_pin(BAT_LOW_LED_PIN, BAT_LOW_LED_PIN_ON_STATE);
+-            //gpio_write_pin(LED_CAPS_LOCK_PIN, LED_PIN_ON_STATE);
++            // gpio_write_pin(LED_CAPS_LOCK_PIN, LED_PIN_ON_STATE);
+         }
+     }
+ 
+@@ -239,8 +238,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -255,7 +254,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -268,8 +268,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k1_pro/k1_pro.c b/keyboards/keychron/k1_pro/k1_pro.c
+index 1abee99e56..6e555c08a6 100644
+--- a/keyboards/keychron/k1_pro/k1_pro.c
++++ b/keyboards/keychron/k1_pro/k1_pro.c
+@@ -209,8 +209,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -225,7 +225,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -238,8 +239,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k2_pro/k2_pro.c b/keyboards/keychron/k2_pro/k2_pro.c
+index 3b407d5674..f2207cbb79 100644
+--- a/keyboards/keychron/k2_pro/k2_pro.c
++++ b/keyboards/keychron/k2_pro/k2_pro.c
+@@ -186,8 +186,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -202,7 +202,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -215,8 +216,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k3_pro/k3_pro.c b/keyboards/keychron/k3_pro/k3_pro.c
+index e52a0abc29..857c780b66 100644
+--- a/keyboards/keychron/k3_pro/k3_pro.c
++++ b/keyboards/keychron/k3_pro/k3_pro.c
+@@ -192,8 +192,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -207,7 +207,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -220,8 +221,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k4_pro/k4_pro.c b/keyboards/keychron/k4_pro/k4_pro.c
+index efce075178..ab208edbfa 100644
+--- a/keyboards/keychron/k4_pro/k4_pro.c
++++ b/keyboards/keychron/k4_pro/k4_pro.c
+@@ -187,8 +187,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -202,7 +202,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -215,8 +216,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k5_pro/k5_pro.c b/keyboards/keychron/k5_pro/k5_pro.c
+index f80e48caae..a5afc35db1 100644
+--- a/keyboards/keychron/k5_pro/k5_pro.c
++++ b/keyboards/keychron/k5_pro/k5_pro.c
+@@ -226,8 +226,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -241,8 +241,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+@@ -257,7 +257,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+diff --git a/keyboards/keychron/k6_pro/k6_pro.c b/keyboards/keychron/k6_pro/k6_pro.c
+index 2bce2c7ee1..3825e49787 100644
+--- a/keyboards/keychron/k6_pro/k6_pro.c
++++ b/keyboards/keychron/k6_pro/k6_pro.c
+@@ -48,7 +48,7 @@ key_combination_t key_comb_list[4] = {
+ };
+ 
+ #ifdef KC_BLUETOOTH_ENABLE
+-bool firstDisconnect = true;
++bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
+@@ -145,7 +145,7 @@ void keyboard_post_init_kb(void) {
+ 
+     ckbt51_init(false);
+     bluetooth_init();
+-#    endif
++#endif
+ 
+     power_on_indicator_timer_buffer = sync_timer_read32() | 1;
+     gpio_write_pin(BAT_LOW_LED_PIN, BAT_LOW_LED_PIN_ON_STATE);
+@@ -170,7 +170,7 @@ void matrix_scan_kb(void) {
+ 
+ #ifdef FACTORY_RESET_TASK
+     FACTORY_RESET_TASK();
+-#    endif
++#endif
+     matrix_scan_user();
+ }
+ 
+@@ -184,8 +184,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -199,7 +199,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -212,8 +213,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k7_pro/k7_pro.c b/keyboards/keychron/k7_pro/k7_pro.c
+index a277ca486b..3c8c19878a 100644
+--- a/keyboards/keychron/k7_pro/k7_pro.c
++++ b/keyboards/keychron/k7_pro/k7_pro.c
+@@ -202,8 +202,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -218,7 +218,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -231,8 +232,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k8_pro/k8_pro.c b/keyboards/keychron/k8_pro/k8_pro.c
+index b6421bed3b..40f2b794e2 100644
+--- a/keyboards/keychron/k8_pro/k8_pro.c
++++ b/keyboards/keychron/k8_pro/k8_pro.c
+@@ -212,8 +212,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -228,7 +228,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -241,8 +242,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/k9_pro/k9_pro.c b/keyboards/keychron/k9_pro/k9_pro.c
+index 6a9acaac1c..f286b36bc4 100644
+--- a/keyboards/keychron/k9_pro/k9_pro.c
++++ b/keyboards/keychron/k9_pro/k9_pro.c
+@@ -199,8 +199,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -214,7 +214,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -227,8 +228,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/q10_pro/q10_pro.c b/keyboards/keychron/q10_pro/q10_pro.c
+index c85871d1f0..688022da8b 100644
+--- a/keyboards/keychron/q10_pro/q10_pro.c
++++ b/keyboards/keychron/q10_pro/q10_pro.c
+@@ -149,7 +149,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+ 
+ #if defined(ENCODER_ENABLE)
+ static void encoders_pins_cb(void *param) {
+-    uint8_t index = (uint32_t)param;
++    uint8_t     index = (uint32_t)param;
+     extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
+     encoder_quadrature_handle_inerrupt_read(index);
+ }
+@@ -218,8 +218,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -234,7 +234,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -247,8 +248,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/q13_pro/q13_pro.c b/keyboards/keychron/q13_pro/q13_pro.c
+index 0845d0c0f0..511f385fd0 100644
+--- a/keyboards/keychron/q13_pro/q13_pro.c
++++ b/keyboards/keychron/q13_pro/q13_pro.c
+@@ -149,7 +149,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+ 
+ #if defined(ENCODER_ENABLE)
+ static void encoders_pins_cb(void *param) {
+-    uint8_t index = (uint32_t)param;
++    uint8_t     index = (uint32_t)param;
+     extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
+     encoder_quadrature_handle_inerrupt_read(index);
+ }
+@@ -219,8 +219,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -235,7 +235,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -248,8 +249,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/q14_pro/q14_pro.c b/keyboards/keychron/q14_pro/q14_pro.c
+index 8de4a842c5..047ad6c6d5 100644
+--- a/keyboards/keychron/q14_pro/q14_pro.c
++++ b/keyboards/keychron/q14_pro/q14_pro.c
+@@ -135,7 +135,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+ 
+ #if defined(ENCODER_ENABLE)
+ static void encoders_pins_cb(void *param) {
+-    uint8_t index = (uint32_t)param;
++    uint8_t     index = (uint32_t)param;
+     extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
+     encoder_quadrature_handle_inerrupt_read(index);
+ }
+@@ -205,8 +205,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -221,7 +221,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -234,8 +235,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/q1_pro/q1_pro.c b/keyboards/keychron/q1_pro/q1_pro.c
+index 781a8c2083..8798fafa15 100644
+--- a/keyboards/keychron/q1_pro/q1_pro.c
++++ b/keyboards/keychron/q1_pro/q1_pro.c
+@@ -131,7 +131,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+ 
+ #if defined(ENCODER_ENABLE)
+ static void encoders_pins_cb(void *param) {
+-    uint8_t index = (uint32_t)param;
++    uint8_t     index = (uint32_t)param;
+     extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
+     encoder_quadrature_handle_inerrupt_read(index);
+ }
+@@ -146,8 +146,8 @@ static void own_bt_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -209,14 +209,14 @@ void matrix_scan_kb(void) {
+ #ifdef KC_BLUETOOTH_ENABLE
+ static void ckbt51_param_init(void) {
+     /* Set bluetooth device name */
+-    ckbt51_set_local_name(STR(PRODUCT));
++    ckbt51_set_local_name(PRODUCT);
+     /* Set bluetooth parameters */
+     module_param_t param = {.event_mode             = 0x02,
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -230,7 +230,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -243,8 +244,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/q2_pro/q2_pro.c b/keyboards/keychron/q2_pro/q2_pro.c
+index 2a2b8ede15..d340b6b916 100644
+--- a/keyboards/keychron/q2_pro/q2_pro.c
++++ b/keyboards/keychron/q2_pro/q2_pro.c
+@@ -135,7 +135,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+ 
+ #if defined(ENCODER_ENABLE)
+ static void encoders_pins_cb(void *param) {
+-    uint8_t index = (uint32_t)param;
++    uint8_t     index = (uint32_t)param;
+     extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
+     encoder_quadrature_handle_inerrupt_read(index);
+ }
+@@ -204,8 +204,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -219,7 +219,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -232,8 +233,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/q3_pro/q3_pro.c b/keyboards/keychron/q3_pro/q3_pro.c
+index 924edf1c28..348846c183 100644
+--- a/keyboards/keychron/q3_pro/q3_pro.c
++++ b/keyboards/keychron/q3_pro/q3_pro.c
+@@ -139,7 +139,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+ 
+ #if defined(ENCODER_ENABLE)
+ static void encoders_pins_cb(void *param) {
+-    uint8_t index = (uint32_t)param;
++    uint8_t     index = (uint32_t)param;
+     extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
+     encoder_quadrature_handle_inerrupt_read(index);
+ }
+@@ -214,8 +214,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -229,7 +229,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -242,8 +243,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/q4_pro/q4_pro.c b/keyboards/keychron/q4_pro/q4_pro.c
+index a6ebd20287..f74dd18824 100644
+--- a/keyboards/keychron/q4_pro/q4_pro.c
++++ b/keyboards/keychron/q4_pro/q4_pro.c
+@@ -188,8 +188,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -204,7 +204,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -217,8 +218,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/q5_pro/q5_pro.c b/keyboards/keychron/q5_pro/q5_pro.c
+index e828db32d1..43013bd522 100644
+--- a/keyboards/keychron/q5_pro/q5_pro.c
++++ b/keyboards/keychron/q5_pro/q5_pro.c
+@@ -135,7 +135,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+ 
+ #if defined(ENCODER_ENABLE)
+ static void encoders_pins_cb(void *param) {
+-    uint8_t index = (uint32_t)param;
++    uint8_t     index = (uint32_t)param;
+     extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
+     encoder_quadrature_handle_inerrupt_read(index);
+ }
+@@ -205,8 +205,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -221,7 +221,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -234,8 +235,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/q6_pro/q6_pro.c b/keyboards/keychron/q6_pro/q6_pro.c
+index 16fb423437..60bd1ebd9d 100644
+--- a/keyboards/keychron/q6_pro/q6_pro.c
++++ b/keyboards/keychron/q6_pro/q6_pro.c
+@@ -90,9 +90,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+             }
+             return false; // Skip all further processing of this key)
+         case KC_TASK:
+-            if (record->event.pressed) {
+-                ckbt51_factory_reset();
+-            }
+         case KC_FILE:
+         case KC_SNAP:
+         case KC_CTANA:
+@@ -141,7 +138,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+ 
+ #if defined(ENCODER_ENABLE)
+ static void encoders_pins_cb(void *param) {
+-    uint8_t index = (uint32_t)param;
++    uint8_t     index = (uint32_t)param;
+     extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
+     encoder_quadrature_handle_inerrupt_read(index);
+ }
+@@ -226,8 +223,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -242,7 +239,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -255,8 +253,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
+diff --git a/keyboards/keychron/q8_pro/q8_pro.c b/keyboards/keychron/q8_pro/q8_pro.c
+index 7f3f3b451a..72168a0878 100644
+--- a/keyboards/keychron/q8_pro/q8_pro.c
++++ b/keyboards/keychron/q8_pro/q8_pro.c
+@@ -135,7 +135,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+ 
+ #if defined(ENCODER_ENABLE)
+ static void encoders_pins_cb(void *param) {
+-    uint8_t index = (uint32_t)param;
++    uint8_t     index = (uint32_t)param;
+     extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
+     encoder_quadrature_handle_inerrupt_read(index);
+ }
+@@ -206,8 +206,8 @@ static void ckbt51_param_init(void) {
+                             .connected_idle_timeout = 7200,
+                             .pairing_timeout        = 180,
+                             .pairing_mode           = 0,
+-                            .reconnect_timeout      = 5,
+-                            .report_rate            = 90,
++                            .reconnect_timeout      = 60,
++                            .report_rate            = 133,
+                             .vendor_id_source       = 1,
+                             .verndor_id             = 0, // Must be 0x3434
+                             .product_id             = PRODUCT_ID};
+@@ -222,7 +222,8 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+     }
+     /* CKBT51 bluetooth module boot time is slower, it enters disconnected after boot,
+        so we place initialization here. */
+-    if (firstDisconnect && sync_timer_read32() < 1000 && get_transport() == TRANSPORT_BLUETOOTH) {
++    /* Apply module params on first BT init regardless of boot timing (slow module boot / late BT switch) */
++    if (firstDisconnect && get_transport() == TRANSPORT_BLUETOOTH) {
+         ckbt51_param_init();
+         bluetooth_connect();
+         firstDisconnect = false;
+@@ -235,8 +236,8 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+                                 .connected_idle_timeout = 7200,
+                                 .pairing_timeout        = 180,
+                                 .pairing_mode           = 0,
+-                                .reconnect_timeout      = 5,
+-                                .report_rate            = 90,
++                                .reconnect_timeout      = 60,
++                                .report_rate            = 133,
+                                 .vendor_id_source       = 1,
+                                 .verndor_id             = 0, // Must be 0x3434
+                                 .product_id             = PRODUCT_ID};
