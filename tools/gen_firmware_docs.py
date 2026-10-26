@@ -39,6 +39,7 @@ BASELINE = {
     "branch": "wls_2025q1",
     "commit": "c8b2b23",
 }
+REPO_URL = "https://github.com/thementalcoding/keychron-pro-firmware"
 TESTED_NOTE = (
     "Flashed and used on one physical unit (maintainer). Bursts of repeated keys "
     "not yet confirmed fixed long-term; see README warnings."
@@ -264,12 +265,12 @@ def write_model_readme(firmware_dir: str, model: dict, version: str, build: str)
     first = model["variants"][0]
     body = f"""# {name} — community QMK firmware
 
-[← All models](../../README.md) · v{version} (build {build}) · GPL-2.0
+[← All models]({REPO_URL}/blob/main/README.md) · v{version} (build {build}) · GPL-2.0
 
 Unofficial build for the **{name}** (STM32L432 + CKBT51 Bluetooth module), based on
 Keychron `wls_2025q1` @ `c8b2b23`. Fixes Bluetooth link robustness and raises the
-report rate to 133 Hz. Read the [main README](../../README.md) and the
-[recovery guide](../../docs/RECOVERY.md) before flashing.
+report rate to 133 Hz. Read the [main README]({REPO_URL}/blob/main/README.md) and the
+[recovery guide]({REPO_URL}/blob/main/docs/RECOVERY.md) before flashing.
 
 {warning}
 

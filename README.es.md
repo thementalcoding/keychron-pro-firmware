@@ -30,7 +30,7 @@ informes Bluetooth de 90 Hz (de fábrica) al máximo documentado del módulo:
 | | |
 |---|---|
 | ✅ **Probado en hardware real** | **1 unidad**: Keychron K13 Pro **ISO RGB** (`0x02D1`) |
-| ⚠️ **Compilado y verificado automáticamente, nunca flasheado** | El resto de modelos y variantes (95 imágenes) |
+| ⚠️ **Compilado y verificado automáticamente, nunca flasheado** | El resto de modelos y variantes (94 imágenes) |
 
 Todos los binarios salen del mismo código parcheado, pasan los controles de
 sufijo DFU/CRC/tamaño en CI y se publican con su SHA-256. **No se ha probado

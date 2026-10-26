@@ -69,7 +69,18 @@ python3 tools/gen_firmware_docs.py \
 python3 tools/verify_bins.py
 python3 tools/verify_manifest.py
 sha256sum -c SHA256SUMS
+
+# 4. build the release assets (26 standalone model ZIPs + full ZIP)
+python3 tools/make_release_assets.py --out /tmp/release --version 1.0.0
 ```
+
+`tools/make_release_assets.py` reads `firmware/manifest.json` and produces, per
+model, `keychron-<model>-v<version>.zip` containing a short `README.md`, a model
+`SHA256SUMS` and `firmware/<model>/...`. The `...-full.zip` asset contains the
+whole published tree (without `.github`, `.git` or caches). The script extracts
+every model ZIP into a temporary directory and runs `sha256sum -c SHA256SUMS`, so
+a non-zero exit means an asset is broken. ZIPs use fixed timestamps and sorted
+entries to keep rebuilds reproducible.
 
 ## Pull request checklist
 

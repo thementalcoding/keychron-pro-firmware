@@ -7,7 +7,7 @@ maintainers and AI agents.
 
 | | |
 |---|---|
-| Release | **v1.0.0**, tag `3a13cec`, 28 assets (26 model ZIPs + manifest + SHA256SUMS) |
+| Release | **v1.0.0**, 29 assets (26 standalone model ZIPs + full ZIP + manifest + SHA256SUMS) |
 | Repository | https://github.com/thementalcoding/keychron-pro-firmware |
 | Release URL | https://github.com/thementalcoding/keychron-pro-firmware/releases/tag/v1.0.0 |
 | Upstream PR | https://github.com/Keychron/qmk_firmware/pull/529 — OPEN, MERGEABLE, 6 commits, 33 files |
@@ -42,13 +42,15 @@ fix(patch): include final q1_pro name fix and q6_pro factory-reset removal
 - 95/95 builds, DFU/CRC/size checks, manifest 26/95/1, checksums.
 - Public repo rebuilt (3 commits), organised by model, README/RECOVERY/TESTING
   in EN+ES, issue form, automatic test index and badge.
-- Release v1.0.0 with per-model ZIPs; one ZIP verified end to end.
+- Release v1.0.0 with standalone per-model ZIPs (README + model SHA256SUMS +
+  binaries), a full-tree ZIP and absolute documentation links; one model ZIP
+  verified end to end by `tools/make_release_assets.py`.
 - PR #529 updated to 26 models, 2 extra commits pushed, comment added.
 
 ## Pending
 
 1. **Test review**: verify the `Build (QMK)` run triggered by tag `v1.0.0`,
-   validate all 28 assets and the 95 binaries, propose test improvements.
+   validate all 29 assets and the 95 binaries, propose test improvements.
 2. **Commit AI documentation** (`AGENTS.md`, `docs/AI_CONTEXT.md`,
    `docs/SCHEMAS.md`, `llms.txt`, `.github/copilot-instructions.md`,
    `tools/verify_repo.py`) and add `verify_repo.py` to CI.
@@ -99,6 +101,7 @@ python3 tools/check_sanitization.py
 python3 tools/gen_firmware_docs.py \
   --builds <build-status> --qmk-root <qmk checkout> --out . \
   --tested k13_pro/iso/rgb --version 1.0.0 --build 2026-10-26c
+python3 tools/make_release_assets.py --out /tmp/release --version 1.0.0
 
 # upstream
 gh pr view 529 -R Keychron/qmk_firmware --json state,title,headRefOid,mergeable,commits

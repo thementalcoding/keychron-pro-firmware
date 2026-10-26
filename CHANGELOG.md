@@ -51,6 +51,10 @@ binary images, one folder per model.
 
 ### Changed
 
+- Release assets repackaged: each `keychron-<model>-v1.0.0.zip` is now standalone
+  (brief `README.md` + model `SHA256SUMS` + `firmware/<model>/...`), plus a
+  `keychron-pro-firmware-v1.0.0-full.zip` with the complete tree. Per-model
+  documentation links are absolute.
 - Repository renamed and reorganised for the whole Keychron Pro wireless range.
 - Binaries built from the 4-commit series on upstream `Keychron/qmk_firmware`
   `wls_2025q1` @ `c8b2b23` (arm-none-eabi-gcc 14.2, QMK CLI).

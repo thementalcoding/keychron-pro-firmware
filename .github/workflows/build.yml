@@ -32,7 +32,9 @@ jobs:
 
       - name: Fetch Keychron QMK tree at the pinned base commit
         run: |
-          BASE=c8b2b23
+          # git fetch --depth 1 does not accept abbreviated commit SHAs, so the
+          # base must be the full 40-hex SHA of c8b2b23 (wls_2025q1).
+          BASE=c8b2b237b4ef09765e48cbb5c1fdb0afd164289f
           git clone --filter=blob:none --no-checkout https://github.com/Keychron/qmk_firmware.git /qmk
           cd /qmk
           git fetch --depth 1 origin "$BASE"

@@ -1,11 +1,11 @@
 # K14 Pro — community QMK firmware
 
-[← All models](../../README.md) · v1.0.0 (build 2026-10-26c) · GPL-2.0
+[← All models](https://github.com/thementalcoding/keychron-pro-firmware/blob/main/README.md) · v1.0.0 (build 2026-10-26c) · GPL-2.0
 
 Unofficial build for the **K14 Pro** (STM32L432 + CKBT51 Bluetooth module), based on
 Keychron `wls_2025q1` @ `c8b2b23`. Fixes Bluetooth link robustness and raises the
-report rate to 133 Hz. Read the [main README](../../README.md) and the
-[recovery guide](../../docs/RECOVERY.md) before flashing.
+report rate to 133 Hz. Read the [main README](https://github.com/thementalcoding/keychron-pro-firmware/blob/main/README.md) and the
+[recovery guide](https://github.com/thementalcoding/keychron-pro-firmware/blob/main/docs/RECOVERY.md) before flashing.
 
 > ⚠️ **Untested on hardware.** This model compiles and passes all automated
 > checks (DFU suffix, CRC, size, manifest), but has not been flashed on a

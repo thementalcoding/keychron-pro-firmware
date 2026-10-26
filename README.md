@@ -29,7 +29,7 @@ stock 90 Hz to the module's documented maximum of **133 Hz**.
 | | |
 |---|---|
 | ✅ **Tested on real hardware** | **1 unit**: Keychron K13 Pro **ISO RGB** (`0x02D1`) |
-| ⚠️ **Compiled + automatically verified, never flashed** | Every other model and variant (95 images) |
+| ⚠️ **Compiled + automatically verified, never flashed** | Every other model and variant (94 images) |
 
 Every binary in this repository is compiled from the same patched source, passes
 the DFU-suffix/CRC/size checks in CI, and is published with its SHA-256. **No
