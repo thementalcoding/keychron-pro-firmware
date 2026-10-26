@@ -1275,7 +1275,7 @@ index 8de4a842c5..047ad6c6d5 100644
                                  .verndor_id             = 0, // Must be 0x3434
                                  .product_id             = PRODUCT_ID};
 diff --git a/keyboards/keychron/q1_pro/q1_pro.c b/keyboards/keychron/q1_pro/q1_pro.c
-index 781a8c2083..8798fafa15 100644
+index 781a8c2083..c5f76e718e 100644
 --- a/keyboards/keychron/q1_pro/q1_pro.c
 +++ b/keyboards/keychron/q1_pro/q1_pro.c
 @@ -131,7 +131,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
@@ -1287,7 +1287,14 @@ index 781a8c2083..8798fafa15 100644
      extern void encoder_quadrature_handle_inerrupt_read(uint8_t index);
      encoder_quadrature_handle_inerrupt_read(index);
  }
-@@ -146,8 +146,8 @@ static void own_bt_param_init(void) {
+@@ -140,14 +140,14 @@ static void encoders_pins_cb(void *param) {
+ #ifdef BLUETOOTH_ENABLE
+ static void own_bt_param_init(void) {
+     /* Set bluetooth device name */
+-    ckbt51_set_local_name(STR(PRODUCT));
++    ckbt51_set_local_name(PRODUCT);
+     wait_ms(10);
+     module_param_t param = {.event_mode             = 0x02,
                              .connected_idle_timeout = 7200,
                              .pairing_timeout        = 180,
                              .pairing_mode           = 0,
