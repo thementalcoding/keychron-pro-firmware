@@ -36,9 +36,9 @@ the DFU-suffix/CRC/size checks in CI, and is published with its SHA-256. **No
 other unit has been tested**, so treat those images as *untested builds* until a
 community report says otherwise.
 
-The original symptom (bursts of repeated keys) is **not yet confirmed as fixed**
-long-term: preliminary results on the tested unit are good (+40 % polling rate,
-no episodes), but only a few days of use have passed.
+**Field status (2026-10-27):** after several days of daily Bluetooth use on the
+tested unit there have been no burst episodes and typing feels markedly better.
+This is still a single unit, so the fix is not confirmed long-term.
 
 Have you flashed one? **[Report it in 30 seconds →](https://github.com/thementalcoding/keychron-pro-firmware/issues/new?template=hardware_test.yml)**
 The counters on this page update automatically from those reports

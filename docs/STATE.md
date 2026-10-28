@@ -15,7 +15,7 @@ maintainers and AI agents.
 | Fork | branch `k13-pro-bt-fixes`, head includes `5c5e03f` (q6) and `36dd12e` (q1) |
 | Range | 26 CKBT51 models, 95 variants, all `via` |
 | Hardware-tested | **1 unit** (K13 Pro ISO RGB) |
-| Burst symptom | measured improvement (7→5 ms, ~143→~200 reports/s); long-term confirmation pending |
+| Burst symptom | measured improvement (7→5 ms, ~143→~200 reports/s); maintainer reports several days of daily Bluetooth use without episodes (single unit, not long-term proof) |
 
 ## Repository history (main)
 
@@ -56,7 +56,8 @@ d7cf2fc release: v1.0.0 — 26 CKBT51 models, 95 images, bilingual docs, recover
 ## Pending
 
 1. **Keychron PR #529**: workflow approval + human review.
-2. **Field validation** (2–3 days); if bursts reappear, run
+2. **Field validation**: positive after several days of daily Bluetooth use
+   (single unit, not long-term proof); if bursts reappear, run
    `tools/bt_tune.sh capture`.
 3. **Hardware backlog** (R3-02/03/04/05, q1 A9); do not touch without a unit.
 4. Optional: CI build matrix (95 variants), unit tests for the parser.

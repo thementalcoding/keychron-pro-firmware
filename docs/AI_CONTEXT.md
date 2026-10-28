@@ -86,7 +86,8 @@ See `docs/SCHEMAS.md` for the exact shapes.
 
 Measured on the only hardware-tested unit (K13 Pro ISO RGB, Linux 6.12, AX210):
 minimum inter-report gap **7 → 5 ms**, ceiling **~143 → ~200 reports/s**.
-Bursts: no episodes so far, **not confirmed long-term**.
+Bursts: after several days of daily Bluetooth use, no episodes and typing feels
+markedly better; **single unit, so not confirmed long-term**.
 
 ## 5. Test-report pipeline
 

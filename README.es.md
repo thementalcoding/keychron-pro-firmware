@@ -37,9 +37,10 @@ sufijo DFU/CRC/tamaño en CI y se publican con su SHA-256. **No se ha probado
 ninguna otra unidad**, así que considera esas imágenes *sin probar* hasta que un
 reporte de la comunidad diga lo contrario.
 
-El síntoma original (ráfagas de teclas repetidas) **aún no está confirmado como
-resuelto** a largo plazo: en la unidad probada los resultados preliminares son
-buenos (+40 % de polling, sin episodios), pero solo han pasado unos días de uso.
+**Estado de campo (27-10-2026):** tras varios días de uso diario por Bluetooth en
+la unidad probada no ha habido episodios de ráfagas y la escritura se nota
+claramente mejor. Sigue siendo una sola unidad, así que la corrección no está
+confirmada a largo plazo.
 
 ¿Lo has flasheado? **[Repórtalo en 30 segundos →](https://github.com/thementalcoding/keychron-pro-firmware/issues/new?template=hardware_test.yml)**
 Los contadores de esta página se actualizan solos con esos reportes
