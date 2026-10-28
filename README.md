@@ -15,6 +15,9 @@ The builds fix a family of Bluetooth-link defects that cause **bursts of repeate
 keystrokes** and silent reconnects, and raise the Bluetooth report rate from the
 stock 90 Hz to the module's documented maximum of **133 Hz**.
 
+Symptoms addressed: **key chatter, double typing and bursts of repeated keys**
+over Bluetooth, plus silent reconnects and a low report rate.
+
 > ⚠️ **Unofficial.** Not affiliated with Keychron. Flashing is your
 > responsibility. A brick is practically impossible: the STM32 **ROM bootloader
 > cannot be overwritten**, so DFU can always be re-entered

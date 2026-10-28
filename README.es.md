@@ -16,6 +16,10 @@ Estas builds corrigen una familia de defectos del enlace Bluetooth que provocan
 informes Bluetooth de 90 Hz (de fábrica) al máximo documentado del módulo:
 **133 Hz**.
 
+Síntomas que corrige: **key chatter, doble escritura y ráfagas de teclas
+repetidas** por Bluetooth, además de reconexiones silenciosas y una tasa de
+informes baja.
+
 > ⚠️ **No oficial.** Sin relación con Keychron. Flashear es responsabilidad tuya.
 > Un brick es prácticamente imposible: el **bootloader ROM del STM32 no se puede
 > sobrescribir**, así que siempre se puede volver al modo DFU
