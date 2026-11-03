@@ -15,6 +15,7 @@ Usage:
 """
 import binascii
 import glob
+import json
 import os
 import struct
 import sys
@@ -63,9 +64,20 @@ def main() -> int:
             print("WARNING: no binaries present in firmware/ — skipping binary checks")
             return 0
 
+    suffix_flags = {}
+    manifest_path = os.path.join("firmware", "manifest.json")
+    if os.path.exists(manifest_path):
+        with open(manifest_path, encoding="utf-8") as handle:
+            for model in json.load(handle).get("models", []):
+                for variant in model.get("variants", []):
+                    suffix_flags[variant.get("file", "")] = variant.get("dfu_suffix", True)
+
     failed = 0
     print(f"{'file':<64} {'size':>7}  result")
     for path in files:
+        if suffix_flags.get(path.replace(os.sep, "/"), True) is False:
+            print(f"{os.path.relpath(path, 'firmware'):<64} {os.path.getsize(path):>7}  OK (WB32 raw, no DFU suffix)")
+            continue
         errors = check(path)
         status = "OK" if not errors else "FAIL: " + "; ".join(errors)
         label = os.path.relpath(path, "firmware") if path.startswith("firmware" + os.sep) else os.path.basename(path)

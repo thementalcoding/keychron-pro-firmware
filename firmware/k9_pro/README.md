@@ -1,54 +1,42 @@
 # K9 Pro — community QMK firmware
 
-[← All models](https://github.com/thementalcoding/keychron-pro-firmware/blob/main/README.md) · v1.0.0 (build 2026-10-26c) · GPL-2.0
+[← All models](https://github.com/thementalcoding/keychron-pro-firmware/blob/main/README.md) · v1.0.1 (build 2026-11-03a) · GPL-2.0
 
-Unofficial build for the **K9 Pro** (STM32L432 + CKBT51 Bluetooth module), based on
-Keychron `wls_2025q1` @ `c8b2b23`. Fixes Bluetooth link robustness and raises the
-report rate to 133 Hz. Read the [main README](https://github.com/thementalcoding/keychron-pro-firmware/blob/main/README.md) and the
-[recovery guide](https://github.com/thementalcoding/keychron-pro-firmware/blob/main/docs/RECOVERY.md) before flashing.
+Unofficial build for the **K9 Pro** (CKBT51 · UART), based on
+Keychron `wls_2025q1` @ `c8b2b23` plus the Claude audit patch series.
 
-> ⚠️ **Untested on hardware.** This model compiles and passes all automated
-> checks (DFU suffix, CRC, size, manifest), but has not been flashed on a
-> device. Report your result with the
-> [hardware-test form](https://github.com/thementalcoding/keychron-pro-firmware/issues/new?template=hardware_test.yml).
+> **Untested on hardware.** This image compiles and passes the automated
+> DFU-suffix, CRC, size, manifest and checksum checks, but it has not been
+> flashed on this model. Report a result through the hardware-test form.
 
 ## Images
 
 | Variant | Keymap | USB PID | File | Tested |
 |---|---|---|---|---|
-| ansi/rgb | `via` | `0x0290` | [`keychron_k9_pro_ansi_rgb_via.bin`](ansi-rgb/keychron_k9_pro_ansi_rgb_via.bin) | ⚠️ no |
-| ansi/white | `via` | `0x0293` | [`keychron_k9_pro_ansi_white_via.bin`](ansi-white/keychron_k9_pro_ansi_white_via.bin) | ⚠️ no |
-| iso/rgb | `via` | `0x0291` | [`keychron_k9_pro_iso_rgb_via.bin`](iso-rgb/keychron_k9_pro_iso_rgb_via.bin) | ⚠️ no |
-| iso/white | `via` | `0x0294` | [`keychron_k9_pro_iso_white_via.bin`](iso-white/keychron_k9_pro_iso_white_via.bin) | ⚠️ no |
-| jis/rgb | `via` | `0x0292` | [`keychron_k9_pro_jis_rgb_via.bin`](jis-rgb/keychron_k9_pro_jis_rgb_via.bin) | ⚠️ no |
-| jis/white | `via` | `0x0295` | [`keychron_k9_pro_jis_white_via.bin`](jis-white/keychron_k9_pro_jis_white_via.bin) | ⚠️ no |
+| `ansi/rgb` | `via` | `0x0290` | [`keychron_k9_pro_ansi_rgb_via.bin`](ansi-rgb/keychron_k9_pro_ansi_rgb_via.bin) | no |
+| `ansi/white` | `via` | `0x0293` | [`keychron_k9_pro_ansi_white_via.bin`](ansi-white/keychron_k9_pro_ansi_white_via.bin) | no |
+| `iso/rgb` | `via` | `0x0291` | [`keychron_k9_pro_iso_rgb_via.bin`](iso-rgb/keychron_k9_pro_iso_rgb_via.bin) | no |
+| `iso/white` | `via` | `0x0294` | [`keychron_k9_pro_iso_white_via.bin`](iso-white/keychron_k9_pro_iso_white_via.bin) | no |
+| `jis/rgb` | `via` | `0x0292` | [`keychron_k9_pro_jis_rgb_via.bin`](jis-rgb/keychron_k9_pro_jis_rgb_via.bin) | no |
+| `jis/white` | `via` | `0x0295` | [`keychron_k9_pro_jis_white_via.bin`](jis-white/keychron_k9_pro_jis_white_via.bin) | no |
 
-`_via` images keep VIA / Keychron Engine keymap support. `_default` images do not
-speak VIA. Verify the download with `sha256sum -c SHA256SUMS` from the repository
-root.
+## Verify
+
+```bash
+cd <extracted folder>
+sha256sum -c SHA256SUMS
+```
 
 ## Flash (Linux / macOS)
 
 1. Back up your keymap (Keychron Engine or VIA JSON export).
-2. Power **Off**, hold **Esc**, switch to **Cable** → `lsusb` shows `0483:df11`.
-3. Flash:
+2. Power **Off**, hold **Esc**, switch to **Cable** until `0483:df11` appears.
+3. Flash the image matching your PID:
 
 ```bash
 sudo dfu-util -d 0483:df11 -a 0 -s 0x08000000:leave -D \
   firmware/k9_pro/ansi-rgb/keychron_k9_pro_ansi_rgb_via.bin
 ```
 
-Replace the path with the image for your PID. Windows: use QMK Toolbox.
-
-## Identify your PID
-
-| Variant | PID |
-|---|---|
-| ansi/rgb | `0x0290` |
-| ansi/white | `0x0293` |
-| iso/rgb | `0x0291` |
-| iso/white | `0x0294` |
-| jis/rgb | `0x0292` |
-| jis/white | `0x0295` |
-
-If your PID is not listed, do not flash this model folder — open an issue.
+Windows: QMK Toolbox (STM32 DFU). The STM32 ROM bootloader cannot be
+overwritten, so DFU can always be re-entered.
