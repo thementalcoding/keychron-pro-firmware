@@ -1,0 +1,1312 @@
+diff --git a/drivers/encoder/encoder_quadrature.c b/drivers/encoder/encoder_quadrature.c
+index cc85d1cd..385bb398 100644
+--- a/drivers/encoder/encoder_quadrature.c
++++ b/drivers/encoder/encoder_quadrature.c
+@@ -9,6 +9,7 @@
+ #include "action.h"
+ #include "keycodes.h"
+ #include "wait.h"
++#include "atomic_util.h"
+ 
+ #ifdef SPLIT_KEYBOARD
+ #    include "split_util.h"
+@@ -217,6 +218,10 @@ void encoder_quadrature_handle_inerrupt_read(uint8_t index) {
+ 
+ __attribute__((weak)) void encoder_driver_task(void) {
+     for (uint8_t i = 0; i < thisCount; i++) {
+-        encoder_quadrature_handle_read(i, encoder_quadrature_read_pin(i, false), encoder_quadrature_read_pin(i, true));
++        /* Boards that also call encoder_quadrature_handle_inerrupt_read() from a pin ISR share
++         * encoder_state/encoder_pulses with this path: read and update them atomically */
++        ATOMIC_BLOCK_FORCEON {
++            encoder_quadrature_handle_read(i, encoder_quadrature_read_pin(i, false), encoder_quadrature_read_pin(i, true));
++        }
+     }
+ }
+diff --git a/keyboards/keychron/bluetooth/bluetooth.c b/keyboards/keychron/bluetooth/bluetooth.c
+index db6b6cea..d6c36718 100644
+--- a/keyboards/keychron/bluetooth/bluetooth.c
++++ b/keyboards/keychron/bluetooth/bluetooth.c
+@@ -164,6 +164,10 @@ void bluetooth_connect_ex(uint8_t host_idx, uint16_t timeout) {
+         if (host_index == host_idx && bt_state == BLUETOOTH_CONNECTED) return;
+         host_index = host_idx;
+         led_state  = 0;
++#ifndef DISABLE_REPORT_BUFFER
++        /* Reports queued for the previous host must not reach the new one */
++        report_buffer_init();
++#endif
+     }
+     bluetooth_transport.connect_ex(host_idx, timeout);
+     bt_state = BLUETOOTH_RECONNECTING;
+@@ -172,6 +176,18 @@ void bluetooth_connect_ex(uint8_t host_idx, uint16_t timeout) {
+ /* Switch to another paired host without leaving keys or stale reports
+  * behind: drop the old host backlog, send a synchronous empty report to
+  * the current host, clear the QMK state and then switch. */
++/*
++ * Called from the report paths while not connected. Every key report would otherwise
++ * re-send CONNECT to the module while it is already reconnecting.
++ */
++static void bluetooth_connect_on_activity(void) {
++    static uint32_t last_connect = 0;
++
++    if (bt_state == BLUETOOTH_RECONNECTING && last_connect && sync_timer_elapsed32(last_connect) < 1000) return;
++    last_connect = sync_timer_read32() | 1;
++    bluetooth_connect();
++}
++
+ void bluetooth_switch_host(uint8_t host_idx) {
+     if (bt_state == BLUETOOTH_CONNECTED) {
+ #ifndef DISABLE_REPORT_BUFFER
+@@ -212,6 +228,10 @@ static void bluetooth_enter_discoverable(uint8_t host_idx) {
+  */
+ static void bluetooth_enter_reconnecting(uint8_t host_idx) {
+     bt_state = BLUETOOTH_RECONNECTING;
++#ifndef DISABLE_REPORT_BUFFER
++    /* Drop reports queued for the lost link (and any pending retry) so they are not replayed late */
++    report_buffer_init();
++#endif
+     indicator_set(bt_state, host_idx);
+     bluetooth_enter_reconnecting_kb(host_idx);
+ }
+@@ -337,6 +357,11 @@ void bluetooth_send_keyboard(report_keyboard_t *report) {
+     if (bt_state == BLUETOOTH_CONNECTED || (bt_state == BLUETOOTH_PARING && pincodeEntry)) {
+         if (bluetooth_transport.send_keyboard) {
+ #ifndef DISABLE_REPORT_BUFFER
++            /* report_buffer_task() only sends in CONNECTED state: send pin code keys directly */
++            if (bt_state == BLUETOOTH_PARING) {
++                bluetooth_transport.send_keyboard(&report->mods);
++                return;
++            }
+             bool firstBuffer = false;
+             if (report_buffer_is_empty() && report_buffer_next_inverval() && report_buffer_get_retry() == 0) {
+                 firstBuffer = true;
+@@ -356,7 +381,7 @@ void bluetooth_send_keyboard(report_keyboard_t *report) {
+ #endif
+         }
+     } else if (bt_state != BLUETOOTH_RESET) {
+-        bluetooth_connect();
++        bluetooth_connect_on_activity();
+     }
+ }
+ void bluetooth_send_nkro(report_nkro_t *report) {
+@@ -365,7 +390,7 @@ void bluetooth_send_nkro(report_nkro_t *report) {
+     if (bt_state == BLUETOOTH_CONNECTED || (bt_state == BLUETOOTH_PARING && pincodeEntry)) {
+         if (bluetooth_transport.send_nkro) {
+ #ifndef DISABLE_REPORT_BUFFER
+-            if (report_buffer_is_empty() && report_buffer_next_inverval()) {
++            if (report_buffer_is_empty() && report_buffer_next_inverval() && report_buffer_get_retry() == 0) {
+                 bluetooth_transport.send_nkro(&report->mods);
+                 report_buffer_update_timer();
+             } else {
+@@ -379,7 +404,7 @@ void bluetooth_send_nkro(report_nkro_t *report) {
+ #endif
+         }
+     } else if (bt_state != BLUETOOTH_RESET) {
+-        bluetooth_connect();
++        bluetooth_connect_on_activity();
+     }
+ }
+ 
+@@ -387,7 +412,7 @@ void bluetooth_send_mouse(report_mouse_t *report) {
+     if (bt_state == BLUETOOTH_CONNECTED) {
+         if (bluetooth_transport.send_mouse) bluetooth_transport.send_mouse((uint8_t *)report);
+     } else if (bt_state != BLUETOOTH_RESET) {
+-        bluetooth_connect();
++        bluetooth_connect_on_activity();
+     }
+ }
+ 
+@@ -395,14 +420,14 @@ void bluetooth_send_system(uint16_t data) {
+     if (bt_state == BLUETOOTH_CONNECTED) {
+         if (bluetooth_transport.send_system) bluetooth_transport.send_system(data);
+     } else if (bt_state != BLUETOOTH_RESET) {
+-        bluetooth_connect();
++        bluetooth_connect_on_activity();
+     }
+ }
+ 
+ void bluetooth_send_consumer(uint16_t data) {
+     if (bt_state == BLUETOOTH_CONNECTED) {
+ #ifndef DISABLE_REPORT_BUFFER
+-        if (report_buffer_is_empty() && report_buffer_next_inverval()) {
++        if (report_buffer_is_empty() && report_buffer_next_inverval() && report_buffer_get_retry() == 0) {
+             if (bluetooth_transport.send_consumer) bluetooth_transport.send_consumer(data);
+             report_buffer_update_timer();
+         } else {
+@@ -415,7 +440,7 @@ void bluetooth_send_consumer(uint16_t data) {
+         if (bluetooth_transport.send_consumer) bluetooth_transport.send_consumer(data);
+ #endif
+     } else if (bt_state != BLUETOOTH_RESET) {
+-        bluetooth_connect();
++        bluetooth_connect_on_activity();
+     }
+ }
+ 
+diff --git a/keyboards/keychron/bluetooth/ckbt51.c b/keyboards/keychron/bluetooth/ckbt51.c
+index c41be326..953aa08d 100644
+--- a/keyboards/keychron/bluetooth/ckbt51.c
++++ b/keyboards/keychron/bluetooth/ckbt51.c
+@@ -125,6 +125,11 @@ bluetooth_transport_t bluetooth_transport = {
+     ckbt51_task
+ };
+ // clang-format on
++
++#ifndef CKBT51_RX_FRAME_TIMEOUT_MS
++#    define CKBT51_RX_FRAME_TIMEOUT_MS 20
++#endif
++
+ void ckbt51_init(bool wakeup_from_low_power_mode) {
+ #if (HAL_USE_SERIAL == TRUE)
+     SerialConfig config = {460800, 0, USART_CR2_STOP1_BITS, 0};
+@@ -457,8 +462,9 @@ void ckbt51_dfu_rx(uint8_t *data, uint8_t length) {
+         uint16_t checksum    = 0;
+         uint8_t  payload_len = data[2];
+ 
+-        /* Check payload_len validity */
++        /* Check payload_len validity: command byte + 2 checksum bytes, inside the received report */
+         if (payload_len > RAW_EPSIZE - PACKECT_HEADER_LEN) return;
++        if (payload_len < 3 || PACKECT_HEADER_LEN + payload_len > length) return;
+ 
+         uint8_t *payload = &data[PACKECT_HEADER_LEN];
+ 
+@@ -601,9 +607,10 @@ static void ckbt51_event_handler(uint8_t evt_type, uint8_t *data, uint8_t len, u
+     if (event.evt_type) bluetooth_event_queue_enqueue(event);
+ }
+ 
+-static bool    wait_for_new_pkt = true;
+-static uint8_t len              = 0xff;
+-static uint8_t sn               = 0;
++static bool     wait_for_new_pkt = true;
++static uint8_t  len              = 0xff;
++static uint8_t  sn               = 0;
++static uint32_t rx_hdr_time      = 0;
+ 
+ /* Reset the UART frame parser state. Called after the UART is re-initialised
+  * on wake-up so a truncated frame cannot consume the next header. */
+@@ -611,6 +618,13 @@ void ckbt51_parser_reset(void) {
+     wait_for_new_pkt = true;
+     len              = 0xff;
+     sn               = 0;
++    rx_hdr_time      = 0;
++}
++
++/* True when no frame is half-parsed and no RX byte is pending. Used by LPM so
++ * STOP1 cannot truncate a frame or lose a pending report ACK. */
++bool ckbt51_rx_idle(void) {
++    return wait_for_new_pkt && WT_DRIVER.iqueue.q_counter == 0;
+ }
+ 
+ void ckbt51_task(void) {
+@@ -626,8 +640,9 @@ void ckbt51_task(void) {
+                 // 3 byte sub-header and are read into the payload buffer below, so it
+                 // must stay within [3, PACKET_MAX_LEN], otherwise discard and resync
+                 if ((~buf[0] & 0xFF) == buf[1] && buf[0] >= 3 && buf[0] <= PACKET_MAX_LEN) {
+-                    len = buf[0];
+-                    sn  = buf[2];
++                    len         = buf[0];
++                    sn          = buf[2];
++                    rx_hdr_time = timer_read32();
+ 
+                     wait_for_new_pkt = false;
+                 }
+@@ -635,6 +650,11 @@ void ckbt51_task(void) {
+         }
+     }
+ 
++    /* Drop a frame whose payload never completes (lost bytes) and resync on the next header */
++    if (!wait_for_new_pkt && WT_DRIVER.iqueue.q_counter < len && timer_elapsed32(rx_hdr_time) > CKBT51_RX_FRAME_TIMEOUT_MS) {
++        ckbt51_parser_reset();
++    }
++
+     if (!wait_for_new_pkt && WT_DRIVER.iqueue.q_counter >= len) {
+         uint8_t buf[PACKET_MAX_LEN] = {0};
+ 
+diff --git a/keyboards/keychron/bluetooth/ckbt51.h b/keyboards/keychron/bluetooth/ckbt51.h
+index f64ed62c..dc0d2dd5 100644
+--- a/keyboards/keychron/bluetooth/ckbt51.h
++++ b/keyboards/keychron/bluetooth/ckbt51.h
+@@ -155,4 +155,5 @@ void ckbt51_radio_test(uint8_t channel);
+ 
+ void ckbt51_task(void);
+ void ckbt51_parser_reset(void);
++bool ckbt51_rx_idle(void);
+ 
+diff --git a/keyboards/keychron/bluetooth/lpm.c b/keyboards/keychron/bluetooth/lpm.c
+index e3ddd82a..b9064bca 100644
+--- a/keyboards/keychron/bluetooth/lpm.c
++++ b/keyboards/keychron/bluetooth/lpm.c
+@@ -31,6 +31,7 @@
+ #include "lpm.h"
+ #include "transport.h"
+ #include "battery.h"
++#include "ckbt51.h"
+ #include "report_buffer.h"
+ 
+ extern matrix_row_t          matrix[MATRIX_ROWS];
+@@ -93,6 +94,8 @@ void lpm_task(void) {
+         && rgb_matrix_is_driver_shutdown()
+ #endif
+         && !lpm_any_matrix_action() && !battery_power_on_sample()
++        /* Don't stop the UART/MCU in the middle of a module frame or while a report still waits for its ACK */
++        && ckbt51_rx_idle()
+ #ifndef DISABLE_REPORT_BUFFER
+         && report_buffer_is_empty() && report_buffer_get_retry() == 0
+ #endif
+diff --git a/keyboards/keychron/common/matrix.c b/keyboards/keychron/common/matrix.c
+index d8008108..be8ee8b9 100644
+--- a/keyboards/keychron/common/matrix.c
++++ b/keyboards/keychron/common/matrix.c
+@@ -89,6 +89,7 @@ static void HC595_output(SIZE_T data, bool bit_flag) {
+             } else {
+                 gpio_write_pin_low(HC595_DS);
+             }
++            HC595_delay(n); /* DS setup time before the SHCP rising edge */
+             gpio_write_pin_high(HC595_SHCP);
+             HC595_delay(n);
+             gpio_write_pin_low(HC595_SHCP);
+diff --git a/keyboards/keychron/common/wireless/lkbt51.c b/keyboards/keychron/common/wireless/lkbt51.c
+index ccf618c5..d4f07bac 100644
+--- a/keyboards/keychron/common/wireless/lkbt51.c
++++ b/keyboards/keychron/common/wireless/lkbt51.c
+@@ -312,6 +312,8 @@ void lkbt51_read(uint8_t* payload, uint8_t len) {
+     pkt[i++] = 0x00;
+     pkt[i++] = 0x80;
+ 
++    /* The exchange (4 header bytes + len) must fit in pkt[] and in the caller's buffer (PACKET_MAX_LEN) */
++    if (len > PACKET_MAX_LEN - i) len = PACKET_MAX_LEN - i;
+     i += len;
+ 
+ #if HAL_USE_SPI
+@@ -624,9 +626,10 @@ void lkbt51_write_customize_data(uint8_t* data, uint8_t len) {
+ }
+ #ifdef RAW_ENABLE
+ void lkbt51_dfu_tx(uint8_t rsp, uint8_t* data, uint8_t len, uint8_t sn) {
+-    uint16_t checksum = 0;
+     uint8_t buf[RAW_EPSIZE] = {0};
+     uint8_t i               = 0;
++    uint8_t chunk           = len > 25 ? 25 : len;
++    uint8_t off             = chunk;
+ 
+     buf[i++] = 0x03;
+     buf[i++] = 0xAA;
+@@ -635,21 +638,19 @@ void lkbt51_dfu_tx(uint8_t rsp, uint8_t* data, uint8_t len, uint8_t sn) {
+     buf[i++] = ~len;
+     buf[i++] = sn;
+     buf[i++] = rsp;
+-    memcpy(&buf[i], data, len);
+-    i += len;
+-
+-    for (uint8_t k = 0; k < i; k++)
+-        checksum += buf[i];
++    /* The first packet can only carry the 25 data bytes that fit RAW_EPSIZE */
++    memcpy(&buf[i], data, chunk);
+ 
+     raw_hid_send(buf, RAW_EPSIZE);
+ 
+-    if (len > 25) {
+-        i = 0;
++    /* The rest is sent as continuation packets prefixed with 0x03 */
++    while (off < len) {
+         memset(buf, 0, RAW_EPSIZE);
+-        buf[i++] = 0x03;
+-        memcpy(&buf[i], data + 25, len - 25);
+-        i = i + len - 25;
++        buf[0] = 0x03;
++        chunk  = len - off > RAW_EPSIZE - 1 ? RAW_EPSIZE - 1 : len - off;
++        memcpy(&buf[1], data + off, chunk);
+         raw_hid_send(buf, RAW_EPSIZE);
++        off += chunk;
+     }
+ }
+ #endif
+@@ -658,8 +659,9 @@ void lkbt51_dfu_rx(uint8_t* data, uint8_t length) {
+         uint16_t checksum    = 0;
+         uint8_t  payload_len = data[2];
+ 
+-        /* Check payload_len validity */
++        /* Check payload_len validity: command byte + 2 checksum bytes, inside the received report */
+         if (payload_len > RAW_EPSIZE - PACKECT_HEADER_LEN) return;
++        if (payload_len < 3 || PACKECT_HEADER_LEN + payload_len > length) return;
+ 
+         uint8_t* payload = &data[PACKECT_HEADER_LEN];
+ 
+@@ -855,15 +857,18 @@ void lkbt51_task(void) {
+         }
+ 
+         pbuf = buf;
+-        if (wait_for_new_pkt) {
+-            for (uint8_t i = 10; i < BUFFER_SIZE - 5; i++) {
+-                if (buf[i] == 0xAA && buf[i + 1] == 0x57     // Packet Head
+-                    && (~buf[i + 2] & 0xFF) == buf[i + 3]) { // Check wheather len is valid
+-                    len              = buf[i + 2];
+-                    sn               = buf[i + 4];
+-                    pbuf             = &buf[i + 5];
+-                    wait_for_new_pkt = false;
+-                }
++        /* Each SPI read holds whole packets: never carry a half-parsed state into the next read */
++        wait_for_new_pkt = true;
++        for (uint8_t i = 10; i < BUFFER_SIZE - 5; i++) {
++            if (buf[i] == 0xAA && buf[i + 1] == 0x57      // Packet Head
++                && (~buf[i + 2] & 0xFF) == buf[i + 3]     // Check wheather len is valid
++                && buf[i + 2] >= 3                        // event type + 2 checksum bytes
++                && i + 5 + buf[i + 2] <= BUFFER_SIZE) {   // packet must be inside buf[]
++                len              = buf[i + 2];
++                sn               = buf[i + 4];
++                pbuf             = &buf[i + 5];
++                wait_for_new_pkt = false;
++                break;
+             }
+         }
+ 
+diff --git a/keyboards/keychron/common/wireless/lpm.c b/keyboards/keychron/common/wireless/lpm.c
+index fc131fa6..6d9cd4c7 100644
+--- a/keyboards/keychron/common/wireless/lpm.c
++++ b/keyboards/keychron/common/wireless/lpm.c
+@@ -201,10 +201,6 @@ __attribute__((weak)) void lpm_wakeup(void) {
+ 
+     halInit();
+ 
+-#ifdef ENCODER_ENABLE
+-    encoder_cb_init();
+-#endif
+-
+     if (wireless_transport.init) wireless_transport.init(true);
+     battery_init();
+ 
+@@ -236,6 +232,11 @@ __attribute__((weak)) void lpm_wakeup(void) {
+     dip_switch_read(true);
+ #endif
+ 
++#ifdef ENCODER_ENABLE
++    /* After the palDisableLineEvent() calls above: a mode pin may share an EXTI line with an encoder pin */
++    encoder_cb_init();
++#endif
++
+     /* Call debounce_free() to avoiding memory leak of debounce_counters as debounce_init()
+     invoked in matrix_init() alloc new memory to debounce_counters */
+     debounce_free();
+diff --git a/keyboards/keychron/common/wireless/wireless.c b/keyboards/keychron/common/wireless/wireless.c
+index c5789d14..f0d62685 100644
+--- a/keyboards/keychron/common/wireless/wireless.c
++++ b/keyboards/keychron/common/wireless/wireless.c
+@@ -162,6 +162,10 @@ void wireless_connect_ex(uint8_t host_idx, uint16_t timeout) {
+ 
+         host_index = host_idx;
+         led_state  = 0;
++#ifndef DISABLE_REPORT_BUFFER
++        /* Reports queued for the previous host must not reach the new one */
++        report_buffer_init();
++#endif
+     }
+     wireless_transport.connect_ex(host_idx, timeout);
+     wireless_state = WT_RECONNECTING;
+@@ -203,6 +207,10 @@ static void wireless_enter_reconnecting(uint8_t host_idx) {
+ 
+     kc_printf("wireless_reconnecting %d\n\r", host_idx);
+     wireless_state = WT_RECONNECTING;
++#ifndef DISABLE_REPORT_BUFFER
++    /* Drop reports queued for the lost link (and any pending retry) so they are not replayed late */
++    report_buffer_init();
++#endif
+     indicator_set(wireless_state, host_idx);
+     wireless_enter_reconnecting_kb(host_idx);
+ }
+@@ -297,6 +305,9 @@ static void wireless_enter_sleep(void) {
+ 
+     if (wireless_state == WT_CONNECTED || wireless_state == WT_PARING) {
+         wireless_state = WT_SUSPEND;
++#ifndef DISABLE_REPORT_BUFFER
++        report_buffer_init();
++#endif
+         kc_printf("WT_SUSPEND\n\r");
+         lpm_timer_reset();
+ 
+@@ -403,7 +414,7 @@ void wireless_send_system(uint16_t data) {
+ void wireless_send_consumer(uint16_t data) {
+     if (wireless_state == WT_CONNECTED) {
+ #ifndef DISABLE_REPORT_BUFFER
+-        if (report_buffer_is_empty() && report_buffer_next_inverval()) {
++        if (report_buffer_is_empty() && report_buffer_next_inverval() && report_buffer_get_retry() == 0) {
+             if (wireless_transport.send_consumer) wireless_transport.send_consumer(data);
+             report_buffer_update_timer();
+         } else {
+diff --git a/keyboards/keychron/common/wireless/wireless.mk b/keyboards/keychron/common/wireless/wireless.mk
+index 1a2be31f..1ec2d890 100644
+--- a/keyboards/keychron/common/wireless/wireless.mk
++++ b/keyboards/keychron/common/wireless/wireless.mk
+@@ -2,6 +2,9 @@ OPT_DEFS += -DLK_WIRELESS_ENABLE
+ OPT_DEFS += -DNO_USB_STARTUP_CHECK
+ OPT_DEFS += -DCORTEX_ENABLE_WFI_IDLE=TRUE
+ OPT_DEFS += -DWIRELESS_NKRO_ENABLE
++# Same post-DFU USB enumeration guard used by the CKBT51 project release.
++# LKBT51 has not been hardware-validated for DFU yet, but the USB stack is shared.
++OPT_DEFS += -DUSB_ENUMERATION_WAIT_MS=500
+ 
+ INFO_RULES_MK = $(shell $(QMK_BIN) generate-rules-mk --quiet --escape --keyboard $(KEYBOARD) --output $(INTERMEDIATE_OUTPUT)/src/info_rules.mk)
+ include $(INFO_RULES_MK)
+diff --git a/keyboards/keychron/k10_pro/k10_pro.c b/keyboards/keychron/k10_pro/k10_pro.c
+index c5e58d10..adbd602b 100644
+--- a/keyboards/keychron/k10_pro/k10_pro.c
++++ b/keyboards/keychron/k10_pro/k10_pro.c
+@@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -260,6 +263,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k11_pro/k11_pro.c b/keyboards/keychron/k11_pro/k11_pro.c
+index 44e30690..083538e9 100644
+--- a/keyboards/keychron/k11_pro/k11_pro.c
++++ b/keyboards/keychron/k11_pro/k11_pro.c
+@@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -259,6 +262,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k12_pro/k12_pro.c b/keyboards/keychron/k12_pro/k12_pro.c
+index b74f93fc..43d7ca31 100644
+--- a/keyboards/keychron/k12_pro/k12_pro.c
++++ b/keyboards/keychron/k12_pro/k12_pro.c
+@@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -244,6 +247,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k13_pro/k13_pro.c b/keyboards/keychron/k13_pro/k13_pro.c
+index 11ecc0d0..84b0f13d 100644
+--- a/keyboards/keychron/k13_pro/k13_pro.c
++++ b/keyboards/keychron/k13_pro/k13_pro.c
+@@ -54,8 +54,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -240,6 +243,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k13_pro/matrix.c b/keyboards/keychron/k13_pro/matrix.c
+index e62c967b..8317cf99 100644
+--- a/keyboards/keychron/k13_pro/matrix.c
++++ b/keyboards/keychron/k13_pro/matrix.c
+@@ -59,7 +59,8 @@ static inline void HC595_delay(uint16_t n) {
+ 
+ static void HC595_output(uint16_t data) {
+     ATOMIC_BLOCK_FORCEON {
+-        for (uint8_t i = 0; i < MATRIX_COLS; i++) {
++        /* Only columns 1..16 are on the shift registers (column 0 is a GPIO): shift 16 bits, not 17 */
++        for (uint8_t i = 0; i < MATRIX_COLS - 1; i++) {
+             if (data & 0x1) {
+                 gpio_write_pin_high(HC595_DS);
+             } else {
+@@ -68,6 +69,7 @@ static void HC595_output(uint16_t data) {
+ 
+             data = data >> 1;
+ 
++            HC595_delay(1); /* DS setup time before the SHCP rising edge */
+             gpio_write_pin_high(HC595_SHCP);
+             HC595_delay(1);
+             gpio_write_pin_low(HC595_SHCP);
+@@ -88,6 +90,7 @@ static void HC595_output_oneBit(uint8_t data) {
+             gpio_write_pin_low(HC595_DS);
+         }
+ 
++        HC595_delay(1); /* DS setup time before the SHCP rising edge */
+         gpio_write_pin_high(HC595_SHCP);
+         HC595_delay(1);
+         gpio_write_pin_low(HC595_SHCP);
+diff --git a/keyboards/keychron/k14_pro/k14_pro.c b/keyboards/keychron/k14_pro/k14_pro.c
+index f2cfa9ff..5631f702 100644
+--- a/keyboards/keychron/k14_pro/k14_pro.c
++++ b/keyboards/keychron/k14_pro/k14_pro.c
+@@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -242,6 +245,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k15_pro/k15_pro.c b/keyboards/keychron/k15_pro/k15_pro.c
+index 1bc5255d..4010f32f 100644
+--- a/keyboards/keychron/k15_pro/k15_pro.c
++++ b/keyboards/keychron/k15_pro/k15_pro.c
+@@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -276,6 +279,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k17_pro/k17_pro.c b/keyboards/keychron/k17_pro/k17_pro.c
+index 92cb95eb..f42da12e 100644
+--- a/keyboards/keychron/k17_pro/k17_pro.c
++++ b/keyboards/keychron/k17_pro/k17_pro.c
+@@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -280,6 +283,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k17_pro/matrix.c b/keyboards/keychron/k17_pro/matrix.c
+index 42c1202b..8163a37c 100644
+--- a/keyboards/keychron/k17_pro/matrix.c
++++ b/keyboards/keychron/k17_pro/matrix.c
+@@ -89,6 +89,7 @@ static void HC595_output(SIZE_T data, bool bit_flag) {
+             } else {
+                 gpio_write_pin_low(HC595_DS);
+             }
++            HC595_delay(n); /* DS setup time before the SHCP rising edge */
+             gpio_write_pin_high(HC595_SHCP);
+             HC595_delay(n);
+             gpio_write_pin_low(HC595_SHCP);
+diff --git a/keyboards/keychron/k1_pro/k1_pro.c b/keyboards/keychron/k1_pro/k1_pro.c
+index a8f8d592..e41750a2 100644
+--- a/keyboards/keychron/k1_pro/k1_pro.c
++++ b/keyboards/keychron/k1_pro/k1_pro.c
+@@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -251,6 +254,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k2_pro/k2_pro.c b/keyboards/keychron/k2_pro/k2_pro.c
+index c9c5ee18..58f23391 100644
+--- a/keyboards/keychron/k2_pro/k2_pro.c
++++ b/keyboards/keychron/k2_pro/k2_pro.c
+@@ -52,8 +52,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -228,6 +231,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k3_pro/k3_pro.c b/keyboards/keychron/k3_pro/k3_pro.c
+index 23a58247..5bec5802 100644
+--- a/keyboards/keychron/k3_pro/k3_pro.c
++++ b/keyboards/keychron/k3_pro/k3_pro.c
+@@ -52,8 +52,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -233,6 +236,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k4_pro/k4_pro.c b/keyboards/keychron/k4_pro/k4_pro.c
+index 9ba77212..57cf23a1 100644
+--- a/keyboards/keychron/k4_pro/k4_pro.c
++++ b/keyboards/keychron/k4_pro/k4_pro.c
+@@ -52,8 +52,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -228,6 +231,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k5_pro/k5_pro.c b/keyboards/keychron/k5_pro/k5_pro.c
+index bc66b742..c07af366 100644
+--- a/keyboards/keychron/k5_pro/k5_pro.c
++++ b/keyboards/keychron/k5_pro/k5_pro.c
+@@ -56,8 +56,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -268,6 +271,12 @@ void bluetooth_enter_disconnected_kb(uint8_t host_idx) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k6_pro/k6_pro.c b/keyboards/keychron/k6_pro/k6_pro.c
+index 34d5b031..0371beea 100644
+--- a/keyboards/keychron/k6_pro/k6_pro.c
++++ b/keyboards/keychron/k6_pro/k6_pro.c
+@@ -52,8 +52,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -225,6 +228,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k7_pro/k7_pro.c b/keyboards/keychron/k7_pro/k7_pro.c
+index 1d490c49..a8ab8ce6 100644
+--- a/keyboards/keychron/k7_pro/k7_pro.c
++++ b/keyboards/keychron/k7_pro/k7_pro.c
+@@ -55,8 +55,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -244,6 +247,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k8_pro/k8_pro.c b/keyboards/keychron/k8_pro/k8_pro.c
+index abf73a98..7f375681 100644
+--- a/keyboards/keychron/k8_pro/k8_pro.c
++++ b/keyboards/keychron/k8_pro/k8_pro.c
+@@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -254,6 +257,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k9_pro/k9_pro.c b/keyboards/keychron/k9_pro/k9_pro.c
+index 863d779b..4820ee25 100644
+--- a/keyboards/keychron/k9_pro/k9_pro.c
++++ b/keyboards/keychron/k9_pro/k9_pro.c
+@@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -240,6 +243,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k9_pro/matrix.c b/keyboards/keychron/k9_pro/matrix.c
+index fef2fbab..ecd67f1c 100644
+--- a/keyboards/keychron/k9_pro/matrix.c
++++ b/keyboards/keychron/k9_pro/matrix.c
+@@ -68,6 +68,7 @@ static void HC595_output(uint16_t data) {
+ 
+             data = data >> 1;
+ 
++            HC595_delay(1); /* DS setup time before the SHCP rising edge */
+             gpio_write_pin_high(HC595_SHCP);
+             HC595_delay(1);
+             gpio_write_pin_low(HC595_SHCP);
+@@ -88,6 +89,7 @@ static void HC595_output_oneBit(uint8_t data) {
+             gpio_write_pin_low(HC595_DS);
+         }
+ 
++        HC595_delay(1); /* DS setup time before the SHCP rising edge */
+         gpio_write_pin_high(HC595_SHCP);
+         HC595_delay(1);
+         gpio_write_pin_low(HC595_SHCP);
+diff --git a/keyboards/keychron/q10_pro/q10_pro.c b/keyboards/keychron/q10_pro/q10_pro.c
+index f97a4c6c..cedee067 100644
+--- a/keyboards/keychron/q10_pro/q10_pro.c
++++ b/keyboards/keychron/q10_pro/q10_pro.c
+@@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -260,6 +263,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/q13_pro/q13_pro.c b/keyboards/keychron/q13_pro/q13_pro.c
+index b8e89222..d4aa15a9 100644
+--- a/keyboards/keychron/q13_pro/q13_pro.c
++++ b/keyboards/keychron/q13_pro/q13_pro.c
+@@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -261,6 +264,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/q14_pro/q14_pro.c b/keyboards/keychron/q14_pro/q14_pro.c
+index 22c8e303..5da41285 100644
+--- a/keyboards/keychron/q14_pro/q14_pro.c
++++ b/keyboards/keychron/q14_pro/q14_pro.c
+@@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -247,6 +250,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/q1_pro/q1_pro.c b/keyboards/keychron/q1_pro/q1_pro.c
+index d97be8a9..ccf19555 100644
+--- a/keyboards/keychron/q1_pro/q1_pro.c
++++ b/keyboards/keychron/q1_pro/q1_pro.c
+@@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -160,8 +163,9 @@ void keyboard_post_init_kb(void) {
+     dip_switch_read(true);
+ 
+ #ifdef KC_BLUETOOTH_ENABLE
+-    gpio_set_pin_output_push_pull(A9);
+-    gpio_write_pin_low(A9);
++    /* Same as the other CKBT51 boards: reset pin released (high). Needs schematic/HW confirmation */
++    palSetLineMode(CKBT51_RESET_PIN, PAL_MODE_OUTPUT_PUSHPULL);
++    palWriteLine(CKBT51_RESET_PIN, PAL_HIGH);
+     /* IMPORTANT: DO NOT enable internal pull-up resistor
+      * as there is an external pull-down resistor.
+      */
+@@ -256,6 +260,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/q2_pro/q2_pro.c b/keyboards/keychron/q2_pro/q2_pro.c
+index 836c721e..71b47b97 100644
+--- a/keyboards/keychron/q2_pro/q2_pro.c
++++ b/keyboards/keychron/q2_pro/q2_pro.c
+@@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -245,6 +248,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/q3_pro/matrix.c b/keyboards/keychron/q3_pro/matrix.c
+index b6c61bbb..8577d10b 100644
+--- a/keyboards/keychron/q3_pro/matrix.c
++++ b/keyboards/keychron/q3_pro/matrix.c
+@@ -95,7 +95,7 @@ static bool select_col(uint8_t col) {
+         if (power_on_indicator_timer_buffer) {
+             if (sync_timer_elapsed32(power_on_indicator_timer_buffer) > POWER_ON_LED_DURATION) {
+                 power_on_indicator_timer_buffer = 0;
+-                HC595_output((~(0x1 << (21 - col - 1))) & (7 << 0));
++                HC595_output((~(0x1 << (21 - col - 1))) & ~(7 << 0));
+             } else {
+                 HC595_output((~(0x1 << (21 - col - 1))));
+             }
+diff --git a/keyboards/keychron/q3_pro/q3_pro.c b/keyboards/keychron/q3_pro/q3_pro.c
+index 5b7cd2e4..e1b16f2c 100644
+--- a/keyboards/keychron/q3_pro/q3_pro.c
++++ b/keyboards/keychron/q3_pro/q3_pro.c
+@@ -56,8 +56,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -255,6 +258,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/q4_pro/q4_pro.c b/keyboards/keychron/q4_pro/q4_pro.c
+index 259c61ca..68adb865 100644
+--- a/keyboards/keychron/q4_pro/q4_pro.c
++++ b/keyboards/keychron/q4_pro/q4_pro.c
+@@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -230,6 +233,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/q5_pro/q5_pro.c b/keyboards/keychron/q5_pro/q5_pro.c
+index 01de0a85..c2fa5960 100644
+--- a/keyboards/keychron/q5_pro/q5_pro.c
++++ b/keyboards/keychron/q5_pro/q5_pro.c
+@@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -247,6 +250,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/q6_pro/q6_pro.c b/keyboards/keychron/q6_pro/q6_pro.c
+index fc8157c0..44f0f788 100644
+--- a/keyboards/keychron/q6_pro/q6_pro.c
++++ b/keyboards/keychron/q6_pro/q6_pro.c
+@@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -265,6 +268,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/q8_pro/q8_pro.c b/keyboards/keychron/q8_pro/q8_pro.c
+index a6c6885a..0c7e9fab 100644
+--- a/keyboards/keychron/q8_pro/q8_pro.c
++++ b/keyboards/keychron/q8_pro/q8_pro.c
+@@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
+ bool                   bt_factory_reset = false;
+ static virtual_timer_t pairing_key_timer;
+ 
++static volatile uint8_t pairing_host_pending = 0;
++
++/* Virtual timer callback runs in ISR context: only flag the request, the UART command is sent from bluetooth_pre_task() */
+ static void pairing_key_timer_cb(void *arg) {
+-    bluetooth_pairing_ex(*(uint8_t *)arg, NULL);
++    pairing_host_pending = *(uint8_t *)arg;
+ }
+ #endif
+ 
+@@ -248,6 +251,12 @@ void ckbt51_default_ack_handler(uint8_t *data, uint8_t len) {
+ void bluetooth_pre_task(void) {
+     static uint8_t mode = 1;
+ 
++    if (pairing_host_pending) {
++        uint8_t idx          = pairing_host_pending;
++        pairing_host_pending = 0;
++        bluetooth_pairing_ex(idx, NULL);
++    }
++
+     if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+         if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
+             mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);

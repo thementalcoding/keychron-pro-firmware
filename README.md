@@ -50,7 +50,7 @@ The counters on this page update automatically from those reports
 [`tested-index` branch](https://github.com/thementalcoding/keychron-pro-firmware/blob/tested-index/TESTED.md).
 
 <!-- BEGIN TESTED -->
-**0 verified reports for the v1.0.1 final images.** The maintainer unit validated the previous `v1.0.1-beta` (K13 Pro ISO RGB); the final images are new bytes. Live table: [tested-index](https://github.com/thementalcoding/keychron-pro-firmware/blob/tested-index/TESTED.md).
+**1 verified report · 1 model** (maintainer unit, K13 Pro ISO RGB, v1.0.1 final, post-DFU enumeration OK 2026-11-03). Live table: [tested-index](https://github.com/thementalcoding/keychron-pro-firmware/blob/tested-index/TESTED.md).
 <!-- END TESTED -->
 
 ---
@@ -89,7 +89,7 @@ variants and per-file notes.
 | [K11 Pro](firmware/k11_pro/README.md) | 4 | `0x02B0`, `0x02B3`, `0x02B6`, `0x02B9` | 4 | no |
 | [K12 Pro](firmware/k12_pro/README.md) | 2 | `0x02C0`, `0x02C3` | 2 | no |
 | [K13 Max](firmware/k13_max/README.md) | 4 | `0x0AD0`, `0x0AD3`, `0x0AD1`, `0x0AD4` | 4 | no |
-| [K13 Pro](firmware/k13_pro/README.md) | 4 | `0x02D0`, `0x02D3`, `0x02D1`, `0x02D4` | 4 | no |
+| [K13 Pro](firmware/k13_pro/README.md) | 4 | `0x02D0`, `0x02D3`, `0x02D1`, `0x02D4` | 4 | ✅ ISO RGB |
 | [K14 Pro](firmware/k14_pro/README.md) | 2 | `0x02E0`, `0x02E3` | 2 | no |
 | [K15 Max](firmware/k15_max/README.md) | 4 | `0x0AF0`, `0x0AF3`, `0x0AF1`, `0x0AF4` | 4 | no |
 | [K15 Pro](firmware/k15_pro/README.md) | 2 | `0x02F6`, `0x02F9` | 2 | no |

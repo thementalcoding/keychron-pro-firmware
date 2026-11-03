@@ -5,9 +5,9 @@
 Unofficial build for the **K13 Pro** (CKBT51 · UART), based on
 Keychron `wls_2025q1` @ `c8b2b23` plus the Claude audit patch series.
 
-> **Untested on hardware.** This image compiles and passes the automated
-> DFU-suffix, CRC, size, manifest and checksum checks, but it has not been
-> flashed on this model. Report a result through the hardware-test form.
+> **Hardware-tested:** the **ISO RGB** variant (PID `0x02D1`) was flashed and
+> post-DFU enumeration confirmed on 2026-11-03 with the v1.0.1 final bytes.
+> The other variants of this model remain untested builds.
 
 ## Images
 
@@ -15,7 +15,7 @@ Keychron `wls_2025q1` @ `c8b2b23` plus the Claude audit patch series.
 |---|---|---|---|---|
 | `ansi/rgb` | `via` | `0x02D0` | [`keychron_k13_pro_ansi_rgb_via.bin`](ansi-rgb/keychron_k13_pro_ansi_rgb_via.bin) | no |
 | `ansi/white` | `via` | `0x02D3` | [`keychron_k13_pro_ansi_white_via.bin`](ansi-white/keychron_k13_pro_ansi_white_via.bin) | no |
-| `iso/rgb` | `via` | `0x02D1` | [`keychron_k13_pro_iso_rgb_via.bin`](iso-rgb/keychron_k13_pro_iso_rgb_via.bin) | no |
+| `iso/rgb` | `via` | `0x02D1` | [`keychron_k13_pro_iso_rgb_via.bin`](iso-rgb/keychron_k13_pro_iso_rgb_via.bin) | yes (1 unit) |
 | `iso/white` | `via` | `0x02D4` | [`keychron_k13_pro_iso_white_via.bin`](iso-white/keychron_k13_pro_iso_white_via.bin) | no |
 
 ## Verify

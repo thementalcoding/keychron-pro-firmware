@@ -11,8 +11,8 @@ maintainers and AI agents.
 | Previous release | **v1.0.1-beta**, Teclado2, build `2026-11-02a`, 26 CKBT51 / 95 images |
 | Repository | https://github.com/thementalcoding/keychron-pro-firmware |
 | Upstream baseline | `Keychron/qmk_firmware` `wls_2025q1` @ `c8b2b23` |
-| Hardware-tested | **1 unit** (K13 Pro ISO RGB), validated against the previous beta bytes |
-| Final images | All marked `tested: false`; revalidation required |
+| Hardware-tested | **1 unit** (K13 Pro ISO RGB, PID `0x02D1`), v1.0.1 final, post-DFU enumeration OK 2026-11-03 |
+| Final images | `k13_pro/iso-rgb` marked `tested: true`; the other 230 remain `tested: false` |
 | Audit inputs | `Teclado5/reports/` (Claude); these files are read-only and were not modified |
 
 ## What is applied in v1.0.1 final
@@ -29,17 +29,16 @@ maintainers and AI agents.
 
 ## Validation
 
-- Manifest: **67 models / 231 images / 0 tested**.
+- Manifest: **67 models / 231 images / 1 tested**.
 - `tools/verify_all.py`: all sizes, SHA-256 and DFU suffixes valid (WB32 raw
   images intentionally have no DFU suffix).
 - `tools/verify_manifest.py`, `tools/verify_bins.py`, `tools/verify_repo.py` and
   `sha256sum -c SHA256SUMS` pass.
-- No hardware flashing was performed in this phase.
+- K13 Pro ISO RGB flashed on hardware and post-DFU enumeration confirmed 2026-11-03.
 
 ## Pending
 
-1. Flash and validate the final K13 ISO RGB image (or a per-model image) on a
-   physical unit.
+1. Run the polling-rate test (`tools/medir_polling.py -m tap`) on the K13 Pro.
 2. Run the host parser harness against the final tree.
 3. Upstream PR #529: human review and workflow approval.
 4. Hardware backlog remains for timing/regression checks.
