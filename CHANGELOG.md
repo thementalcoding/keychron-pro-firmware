@@ -27,7 +27,7 @@ images). Based on Keychron `wls_2025q1` @ `c8b2b23` with the previous
   rate-limit on activity, pairing timer moved out of ISR, K13 16-bit shift
   register output, HC595 DS setup delay, Q3 column mask fix, encoder atomicity,
   and the LKBT51 read/parser/OTA/queue/LPM equivalents.
-- `v1.0.1-beta` is the previous local beta (Teclado2, build `2026-11-02a`,
+- `v1.0.1-beta` is the previous local beta (historical folder before consolidation, build `2026-11-02a`,
   26 CKBT51 models / 95 images).
 - Claude audit findings are documented in `docs/CLAUDE_AUDIT.md`.
 

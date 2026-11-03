@@ -328,7 +328,7 @@ bytes** — una release nunca se re-sube con contenido distinto.
 
 - `v1.0.0` (build **2026-10-26c**): primera release de toda la gama, 26 modelos,
   95 imágenes. Una unidad probada en hardware (K13 Pro ISO RGB).
-- `v1.0.1-beta` (build **2026-11-02a**, Teclado2): 26 modelos CKBT51, 95
+- `v1.0.1-beta` (build **2026-11-02a**, histórica): 26 modelos CKBT51, 95
   imágenes; la beta local anterior con P1–P5.
 - `v1.0.1` (build **2026-11-03a**): 67 modelos, 231 imágenes; parches de la
   auditoría de Claude más la espera USB P5. La v1.0.1 anterior pasa a

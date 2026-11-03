@@ -1,6 +1,6 @@
 # Claude audit — findings and status in v1.0.1 final
 
-Source: `Teclado5/reports/` (Claude). The report files were read-only and were
+Source: `reports/` (Claude). The report files were read-only and were
 not modified while preparing this release.
 
 ## Summary
