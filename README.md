@@ -72,6 +72,7 @@ The counters on this page update automatically from those reports
    ```
 4. **Flash**: see [Flashing](#flashing) (Linux, macOS, Windows).
 5. **Restore your keymap** and [report the result](https://github.com/thementalcoding/keychron-pro-firmware/issues/new?template=hardware_test.yml).
+6. **Measure the link**: run the [multikey polling test v0.0.1](docs/POLLING_TEST.md).
 
 ## Downloads
 

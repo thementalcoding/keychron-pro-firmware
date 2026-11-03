@@ -1,0 +1,55 @@
+name: Pull request review checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Python syntax
+        run: python3 -m py_compile tools/*.py tools/dfu-suffix tools/medir_polling.py tests/*.py
+
+      - name: Polling test self-check
+        run: python3 tools/polling_multikey_v0.0.1.py --self-test
+
+      - name: Polling parser and batching unit tests
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Verify firmware binaries (DFU suffix, size, VID/PID, CRC)
+        run: python3 tools/verify_bins.py
+
+      - name: Verify manifest and published checksums
+        run: |
+          python3 tools/verify_manifest.py
+          if [ -f SHA256SUMS ]; then sha256sum -c SHA256SUMS; fi
+
+      - name: Docs and tree consistency
+        run: python3 tools/verify_repo.py
+
+      - name: Privacy guard
+        run: python3 tools/check_sanitization.py
+
+      - name: Shell syntax and ShellCheck
+        run: |
+          bash -n tools/*.sh
+          shellcheck -S warning tools/*.sh
