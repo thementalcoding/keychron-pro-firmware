@@ -5,9 +5,7 @@
 Unofficial build for the **K13 Pro** (CKBT51 · UART), based on
 Keychron `wls_2025q1` @ `c8b2b23` plus the Claude audit patch series.
 
-> **Hardware-tested:** the **ISO RGB** variant (PID `0x02D1`) was flashed and
-> post-DFU enumeration confirmed on 2026-11-03 with the v1.0.1 final bytes.
-> The other variants of this model remain untested builds.
+> **Hardware-tested:** `iso/rgb` flashed with these bytes; see https://github.com/thementalcoding/keychron-pro-firmware/blob/tested-index/TESTED.md. Other variants remain untested.
 
 ## Images
 
