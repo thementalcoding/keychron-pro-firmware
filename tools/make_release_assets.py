@@ -35,6 +35,7 @@ FULL_TOP_FILES = [
     "AGENTS.md",
     "llms.txt",
     "CHANGELOG.md",
+    "RELEASE_NOTES_v1.0.1.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
     "LICENSE",
