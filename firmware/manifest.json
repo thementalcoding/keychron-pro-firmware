@@ -531,7 +531,7 @@
           "mcu": "stm32-dfu",
           "dfu_suffix": true,
           "tested": true,
-          "tested_note": "Post-DFU enumeration OK on hardware 2026-11-03 (v1.0.1 final)"
+          "tested_note": "K13 Pro ISO RGB flashed 2026-11-03: DFU correct and post-DFU enumeration OK; keymap restored"
         },
         {
           "variant": "iso/white",
