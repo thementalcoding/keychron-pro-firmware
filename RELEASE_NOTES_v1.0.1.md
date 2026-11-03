@@ -7,7 +7,7 @@ Build `2026-11-03a` · baseline `Keychron/qmk_firmware` `wls_2025q1` @ `c8b2b23`
 - **67 products / 231 images**
   - 26 CKBT51 Pro models: 95 images.
   - 41 LKBT51 Max/Version models: 136 images.
-- Previous local release renamed to **v1.0.1-beta** (Teclado2, build `2026-11-02a`,
+- Previous local release renamed to **v1.0.1-beta** (historical folder, build `2026-11-02a`,
   26 CKBT51 models / 95 images).
 
 ## Applied

@@ -318,7 +318,7 @@ a release is never re-uploaded with different content.
 
 - `v1.0.0` (build **2026-10-26c**): first group-wide release, 26 models, 95
   images. One unit hardware-tested (K13 Pro ISO RGB).
-- `v1.0.1-beta` (build **2026-11-02a**, Teclado2): 26 CKBT51 models, 95 images;
+- `v1.0.1-beta` (build **2026-11-02a**, historical): 26 CKBT51 models, 95 images;
   the previous local beta with P1–P5.
 - `v1.0.1` (build **2026-11-03a**): 67 models, 231 images; Claude audit patches
   plus the P5 USB enumeration wait. The previous v1.0.1 is renamed to

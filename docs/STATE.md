@@ -8,12 +8,12 @@ maintainers and AI agents.
 | | |
 |---|---|
 | Release | **v1.0.1** final, 67 models / 231 images (26 CKBT51 Pro + 41 LKBT51 Max/Version) |
-| Previous release | **v1.0.1-beta**, Teclado2, build `2026-11-02a`, 26 CKBT51 / 95 images |
+| Previous release | **v1.0.1-beta** (historical folder, removed), build `2026-11-02a`, 26 CKBT51 / 95 images |
 | Repository | https://github.com/thementalcoding/keychron-pro-firmware |
 | Upstream baseline | `Keychron/qmk_firmware` `wls_2025q1` @ `c8b2b23` |
 | Hardware-tested | **1 unit** (K13 Pro ISO RGB, PID `0x02D1`), v1.0.1 final, post-DFU enumeration OK 2026-11-03 |
 | Final images | `k13_pro/iso-rgb` marked `tested: true`; the other 230 remain `tested: false` |
-| Audit inputs | `Teclado5/reports/` (Claude); these files are read-only and were not modified |
+| Audit inputs | `reports/` (Claude); these files are read-only and were not modified |
 
 ## What is applied in v1.0.1 final
 
