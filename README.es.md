@@ -76,6 +76,7 @@ Los contadores de esta página se actualizan solos con esos reportes
    ```
 4. **Flashea**: ver [Flasheo](#flasheo) (Linux, macOS, Windows).
 5. **Restaura tu keymap** y [reporta el resultado](https://github.com/thementalcoding/keychron-pro-firmware/issues/new?template=hardware_test.yml).
+6. **Mide el enlace**: ejecuta el [test multitecla de polling v0.0.1](docs/POLLING_TEST.es.md).
 
 ## Descargas
 

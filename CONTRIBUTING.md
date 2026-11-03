@@ -1,7 +1,8 @@
 # Contributing
 
 Thanks for helping improve the Keychron Pro wireless firmware. This repository
-publishes patched QMK builds for 26 CKBT51 keyboards plus the audit and tooling;
+publishes patched QMK builds for 67 Keychron wireless products (26 CKBT51 Pro
++ 41 LKBT51 Max/Version) plus the audit and tooling;
 the authoritative source is the patch series in `patches/`, applied on top of
 Keychron's `wls_2025q1` branch.
 
@@ -19,14 +20,14 @@ cd qmk_firmware && git checkout k13-pro-bt-fixes
 qmk compile -kb keychron/k13_pro/iso/rgb -km via
 ```
 
-The Build (QMK) workflow re-applies `patches/k13-audit.patch` on Keychron's tree
+The Build (QMK) workflow re-applies `patches/final-v1.0.1.patch` on Keychron's tree
 at the pinned base commit and compiles the ISO RGB `via` variant inside the
 `ghcr.io/qmk/qmk_cli` container, so a green build job means the patch still
 applies cleanly upstream.
 
 ## Test matrix
 
-Every firmware change must build **all 26 models / 95 variants** before a
+Every firmware change must build **all 67 models / 231 variants** before a
 release. During development, at minimum:
 
 | Board | Variants |
@@ -45,33 +46,45 @@ instead of adding a note to a PR.
 
 ## Measuring the report rate
 
+The main test is the standalone multikey script v0.0.1. See
+[`docs/POLLING_TEST.md`](docs/POLLING_TEST.md) for requirements and
+interpretation.
+
+```bash
+sudo python3 tools/polling_multikey_v0.0.1.py --list
+sudo python3 tools/polling_multikey_v0.0.1.py -t 10 -d /dev/input/event19
+```
+
+Press 3-5 keys simultaneously during the whole test and compare Bluetooth
+against USB on the same host. Report `p10`, minimum, and estimated reports/s.
+The CKBT51 module ceiling is ~133 Hz (~7.5 ms); a 143/s estimate is heuristic
+noise, not a 1000 Hz link.
+
+An optional single-key tap test is also available:
+
 ```bash
 sudo python3 tools/medir_polling.py -m tap -t 10
 ```
 
-Tap a single key ~200 times, compare Bluetooth against USB, and report the
-minimum inter-report gap (expected floor ~5 ms at 133 Hz, ~7 ms at stock 90 Hz).
-Include before/after numbers in the PR.
-
 ## Rebuilding published binaries
 
 ```bash
-# 1. build every variant into builds_v1.0.0/ (see the tester role / build-status.json)
+# 1. build every variant into builds_v1.0.1/ (see the tester role / build-status.json)
 # 2. assemble firmware/, per-model READMEs, manifest.json and SHA256SUMS
 python3 tools/gen_firmware_docs.py \
-  --builds /path/to/builds_v1.0.0 \
+  --builds /path/to/builds_v1.0.1 \
   --qmk-root /path/to/qmk_firmware \
   --out . \
   --tested k13_pro/iso/rgb \
-  --version 1.0.0 --build 2026-10-26c
+  --version 1.0.1 --build 2026-11-03a
 
 # 3. verify
 python3 tools/verify_bins.py
 python3 tools/verify_manifest.py
 sha256sum -c SHA256SUMS
 
-# 4. build the release assets (26 standalone model ZIPs + full ZIP)
-python3 tools/make_release_assets.py --out /tmp/release --version 1.0.0
+# 4. build the release assets (67 standalone model ZIPs + full ZIP)
+python3 tools/make_release_assets.py --out /tmp/release --version 1.0.1
 ```
 
 `tools/make_release_assets.py` reads `firmware/manifest.json` and produces, per
@@ -84,7 +97,7 @@ entries to keep rebuilds reproducible.
 
 ## Pull request checklist
 
-- [ ] Builds pass for the full matrix (95 variants for a release).
+- [ ] Builds pass for the full matrix (231 variants for a release).
 - [ ] `tools/verify_bins.py`, `tools/verify_manifest.py` and
       `sha256sum -c SHA256SUMS` pass.
 - [ ] `firmware/`, `firmware/manifest.json` and root `SHA256SUMS` regenerated
