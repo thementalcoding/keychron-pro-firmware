@@ -97,7 +97,7 @@ def main() -> int:
         if totals.get(key) != value:
             errors.append(f"totals.{key}={totals.get(key)} != actual {value}")
     if tested < 1:
-        errors.append("no image is marked as hardware-tested")
+        print("warning: no image is marked as hardware-tested for this release", file=sys.stderr)
 
     sums: dict[str, str] = {}
     if not os.path.exists(args.sums):

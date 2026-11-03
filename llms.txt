@@ -1,8 +1,9 @@
 # llms.txt — machine-friendly entry point
 
-> Community QMK firmware for 26 Keychron Pro wireless keyboards (CKBT51):
-> Bluetooth link fixes and 133 Hz report rate. Unofficial. One unit
-> hardware-tested (K13 Pro ISO RGB); other images are compiled and verified only.
+> Community QMK firmware for 67 Keychron wireless products (26 CKBT51 Pro +
+> 41 LKBT51 Max/Version): Bluetooth link fixes and 133 Hz report rate on CKBT51.
+> Unofficial. One unit hardware-tested (K13 Pro ISO RGB); other images are
+> compiled and verified only.
 
 ## Start here
 
@@ -14,11 +15,12 @@
 
 ## Firmware
 
-- Source of truth: [patches/k13-audit.patch](patches/k13-audit.patch)
-  (33 files under `keyboards/keychron/`, base `Keychron/qmk_firmware` @ `c8b2b23`).
+- Source of truth: [patches/k13-audit.patch](patches/k13-audit.patch) plus the
+  Claude audit patch series documented in `reports/patches/` (base
+  `Keychron/qmk_firmware` @ `c8b2b23`).
 - Published images: [firmware/manifest.json](firmware/manifest.json),
   [SHA256SUMS](SHA256SUMS), [firmware/](firmware/).
-- Release: https://github.com/thementalcoding/keychron-pro-firmware/releases/tag/v1.0.0
+- Release: https://github.com/thementalcoding/keychron-pro-firmware/releases/tag/v1.0.1
 - Upstream proposal: https://github.com/Keychron/qmk_firmware/pull/529
   (fork `thementalcoding/qmk_firmware`, branch `k13-pro-bt-fixes`).
 

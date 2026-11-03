@@ -5,6 +5,42 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] — 2026-11-03 (build a) — final
+
+Full-range release: **67 Keychron wireless products**, **231 binary images**
+(26 CKBT51 Pro models / 95 images, plus 41 LKBT51 Max/Version models / 136
+images). Based on Keychron `wls_2025q1` @ `c8b2b23` with the previous
+`v1.0.1-beta` work and the Claude audit patch series applied.
+
+> **Hardware validation: 1 unit.** Only the K13 Pro ISO RGB has been flashed and
+> used. The other 230 images compile and pass the automated DFU/CRC/size/manifest
+> checks, but have not been tested on hardware. LKBT51 has never been flashed.
+
+### Added
+
+- LKBT51 SPI-family support in the published tree: 41 models, 136 variants.
+- Claude audit fixes: bounded CKBT51 parser with incomplete-frame timeout,
+  `ckbt51_rx_idle()` LPM gate, OTA RX length validation, report-queue flush on
+  host change, retry guards for NKRO/consumer, PIN-key direct send, connect
+  rate-limit on activity, pairing timer moved out of ISR, K13 16-bit shift
+  register output, HC595 DS setup delay, Q3 column mask fix, encoder atomicity,
+  and the LKBT51 read/parser/OTA/queue/LPM equivalents.
+- `v1.0.1-beta` is the previous local beta (Teclado2, build `2026-11-02a`,
+  26 CKBT51 models / 95 images).
+
+### Changed
+
+- The P5 post-DFU USB enumeration wait (500 ms) is retained for CKBT51 and
+  extended to LKBT51 as a defensive measure.
+- The historical “5 ms / ~200 reports/s” measurement is withdrawn: a single-key
+  tap is ~7.5 ms / 133 Hz.
+
+## [1.0.1-beta] — 2026-11-02 (build 2026-11-02a) — beta
+
+Previous local beta. 26 CKBT51 models / 95 images; P1 reconnect flush, P2 clean
+host switch, P3 UART parser reset after STOP1, P4 per-board matrix settle and
+GPIO atomicity, P5 USB enumeration wait after DFU. Superseded by v1.0.1 final.
+
 ## [1.0.0] — 2026-10-26 (build c)
 
 First **group-wide** release: 26 Keychron Pro wireless models (CKBT51), 95

@@ -1,8 +1,9 @@
 # AGENTS.md — instructions for humans and AI agents
 
-This repository publishes **unofficial community QMK firmware** for 26 Keychron
-Pro wireless keyboards built around the **CKBT51** Bluetooth module, plus the
-audit, patch series and tooling behind it.
+This repository publishes **unofficial community QMK firmware** for 67 Keychron
+wireless products: 26 Pro keyboards built around the **CKBT51** UART module and
+41 Max/Version keyboards built around the **LKBT51** SPI module, plus the audit,
+patch series and tooling behind it.
 
 If you are an AI agent (or a human) asked to analyse, fix or extend this project,
 read this file first, then [`docs/AI_CONTEXT.md`](docs/AI_CONTEXT.md). The
@@ -28,8 +29,9 @@ generated artefacts.
 6. **Hardware-dependent changes are deferred, not guessed.** Anything that
    depends on the closed module's timing/semantics needs a hardware test and
    belongs in the backlog with a note (see `docs/AI_CONTEXT.md` §7).
-7. **Scope discipline.** Do not modify LKBT51 boards (`common/wireless/*` with
-   the SPI stack); they are a different, unverified protocol.
+7. **Scope discipline.** LKBT51 boards use a different SPI stack. The v1.0.1
+   Claude audit patches are applied there, but nothing has been hardware-tested;
+   keep that caveat in user-facing docs.
 8. **Privacy.** No MAC addresses, serial numbers, hostnames, user paths or IPs in
    the tree, issues or logs. CI enforces `tools/check_sanitization.py`.
 9. **Upstream is separate.** The Keychron PR lives in
@@ -41,9 +43,9 @@ generated artefacts.
 ## Repository map
 
 ```
-firmware/<model>/<variant>/<binary>.bin   generated images (95)
+firmware/<model>/<variant>/<binary>.bin   generated images (231)
 firmware/<model>/README.md                generated per-model notes
-firmware/manifest.json                    generated index (26/95/1)
+firmware/manifest.json                    generated index (67/231/0)
 SHA256SUMS                                generated checksums (repo root)
 docs/                                     audit, SDD, recovery, testing, AI context
 patches/k13-audit.patch                   source of truth for the MCU changes
@@ -67,7 +69,7 @@ python3 tools/gen_firmware_docs.py \
   --builds <build-status dir> --qmk-root <qmk checkout> --out . \
   --tested k13_pro/iso/rgb --version X.Y.Z --build YYYY-MM-DDx
 
-# compile the full matrix (95 variants)
+# compile the full matrix (231 variants)
 source <repo>/tools/qmk_env.sh
 qmk list-keyboards | grep '^keychron/\(k\|q\).*_pro/'
 qmk compile -kb keychron/<model>/<variant> -km via
@@ -76,8 +78,8 @@ qmk compile -kb keychron/<model>/<variant> -km via
 ## Definition of done for a firmware change
 
 1. Patch applies cleanly on `c8b2b23` (`git apply --check`).
-2. All 95 variants compile (`via` keymap wherever it exists).
-3. `verify_bins`, `verify_manifest` (26/95/1) and `sha256sum -c` pass.
+2. All 231 variants compile (`via` keymap wherever it exists).
+3. `verify_bins`, `verify_manifest` (67/231/0) and `sha256sum -c` pass.
 4. clang-format 19.1.7 clean on touched files.
 5. Reviewer pass with concrete verdict; hardware-dependent items explicitly
    deferred with rationale.

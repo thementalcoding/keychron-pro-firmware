@@ -6,7 +6,7 @@
 |---------|--------------------|
 | v1.0.x  | :white_check_mark: |
 
-Only the firmware binaries published in this repository (`v1.0.0` and later
+Only the firmware binaries published in this repository (`v1.0.1` and later
 `v1.0.x` builds) and the scripts in `tools/` are in scope.
 
 ## Reporting a vulnerability
@@ -26,16 +26,17 @@ expect.
 
 In scope:
 
-- The MCU firmware changes in `patches/k13-audit.patch` (Bluetooth link
-  handling, report queue, low-power gating, report rate).
+- The MCU firmware changes in `patches/k13-audit.patch` and the Claude audit
+  patch series (Bluetooth link handling, report queue, low-power gating, report
+  rate, OTA bounds, encoder synchronization, matrix output).
 - The `tools/` scripts: flashing helper, DFU suffix wrapper, polling
   measurement.
 - Repository infrastructure and the published binaries.
 
 Out of scope (not treated as vulnerabilities here):
 
-- The **CKBT51 Bluetooth module firmware**: it is closed and cannot be modified
-  by this project (see README, "Known limitations").
+- The **CKBT51 and LKBT51 module firmware**: both are closed and cannot be
+  modified by this project (see README, "Known limitations").
 - **Bricking** concerns: the STM32 ROM bootloader cannot be overwritten and DFU
   recovery is always available (see README, "Flashing").
 - Behaviour documented as a known limitation in the README, for example

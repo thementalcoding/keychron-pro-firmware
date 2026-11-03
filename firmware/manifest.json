@@ -1,585 +1,92 @@
 {
-  "version": "1.0.0",
-  "build": "2026-10-26c",
+  "version": "1.0.1",
+  "build": "2026-11-03a",
   "baseline": {
     "upstream": "Keychron/qmk_firmware",
     "branch": "wls_2025q1",
     "commit": "c8b2b23"
   },
   "totals": {
-    "models": 26,
-    "variants": 95,
-    "tested": 1
+    "models": 67,
+    "variants": 231,
+    "tested": 0
   },
+  "fix": "Claude audit patches: CKBT51 parser/OTA/LPM/queue + LKBT51 parser/OTA/queue/LPM; P5 USB enumeration wait retained and extended to LKBT51",
   "models": [
     {
-      "model": "k1_pro",
-      "name": "K1 Pro",
+      "model": "k0_max",
+      "name": "K0 Max",
       "variants": [
         {
-          "variant": "ansi/rgb",
-          "folder": "ansi-rgb",
+          "variant": "",
+          "folder": "root",
           "keymap": "via",
-          "pid": "0x0210",
-          "file": "firmware/k1_pro/ansi-rgb/keychron_k1_pro_ansi_rgb_via.bin",
-          "size": 61704,
-          "sha256": "4ff6092cf2bad9d9652825736ff4b0f94c98d257042295e96326b64ed6948966",
+          "pid": "0x0A06",
+          "file": "firmware/k0_max/root/keychron_k0_max_via.bin",
+          "size": 61356,
+          "sha256": "bcdb308da04a2da77bc4aef8abe46810bd2812fb09598896b26f9bcec00bfa2f",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "ansi/white",
-          "folder": "ansi-white",
-          "keymap": "via",
-          "pid": "0x0213",
-          "file": "firmware/k1_pro/ansi-white/keychron_k1_pro_ansi_white_via.bin",
-          "size": 53260,
-          "sha256": "82ecb6d024d51f612fc7ab6f81b8a6a46de7c498777b02e00d771881e02858c4",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/rgb",
-          "folder": "iso-rgb",
-          "keymap": "via",
-          "pid": "0x0211",
-          "file": "firmware/k1_pro/iso-rgb/keychron_k1_pro_iso_rgb_via.bin",
-          "size": 61720,
-          "sha256": "4ad4ec14003b4329c7db1a64b0f64ea8c9c1a691120305f3d8449a91325ce39e",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/white",
-          "folder": "iso-white",
-          "keymap": "via",
-          "pid": "0x0214",
-          "file": "firmware/k1_pro/iso-white/keychron_k1_pro_iso_white_via.bin",
-          "size": 53264,
-          "sha256": "99fea95e4f600d59cb39c2469f85b1286fe700f3bdd8a5951de31851595b98b8",
-          "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
     {
-      "model": "k2_pro",
-      "name": "K2 Pro",
+      "model": "k10_max",
+      "name": "K10 Max",
       "variants": [
         {
           "variant": "ansi/rgb",
           "folder": "ansi-rgb",
           "keymap": "via",
-          "pid": "0x0220",
-          "file": "firmware/k2_pro/ansi-rgb/keychron_k2_pro_ansi_rgb_via.bin",
-          "size": 61252,
-          "sha256": "9aa20c0ca7555cdde5d1ea66169484760077d0072758705f68851679a00a98cf",
+          "pid": "0x0AA0",
+          "file": "firmware/k10_max/ansi-rgb/keychron_k10_max_ansi_rgb_via.bin",
+          "size": 96624,
+          "sha256": "11497e8c2ada9c5f59d149d72fa70dcc11f2580515b7ceabd2d8893bd1a17d8c",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "ansi/white",
           "folder": "ansi-white",
           "keymap": "via",
-          "pid": "0x0223",
-          "file": "firmware/k2_pro/ansi-white/keychron_k2_pro_ansi_white_via.bin",
-          "size": 52824,
-          "sha256": "138ae99e953a6e02ae9f546d291275e433edda0b081c2f2f218c229b5ed9cf38",
+          "pid": "0x0AA3",
+          "file": "firmware/k10_max/ansi-white/keychron_k10_max_ansi_white_via.bin",
+          "size": 88256,
+          "sha256": "23a1c41b701094e516b309896b567089a3b9f42c2e5142023be9c1f6145cd0f7",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "iso/rgb",
           "folder": "iso-rgb",
           "keymap": "via",
-          "pid": "0x0221",
-          "file": "firmware/k2_pro/iso-rgb/keychron_k2_pro_iso_rgb_via.bin",
-          "size": 61276,
-          "sha256": "be43fcdb8ca992346c5f39dcd00e55db17a1c74c2f2c18d856d29c8e9a08f5a2",
+          "pid": "0x0AA1",
+          "file": "firmware/k10_max/iso-rgb/keychron_k10_max_iso_rgb_via.bin",
+          "size": 96632,
+          "sha256": "70112b9d4b0adde9e6db5a6711727bc82f88faa79ba7330ad62cac14c5200dd0",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "iso/white",
           "folder": "iso-white",
           "keymap": "via",
-          "pid": "0x0224",
-          "file": "firmware/k2_pro/iso-white/keychron_k2_pro_iso_white_via.bin",
-          "size": 52824,
-          "sha256": "13fe86096223f60b8409010c2a3b4cc0d9eb4611bfb2b446dd0509cc8e90920e",
+          "pid": "0x0AA4",
+          "file": "firmware/k10_max/iso-white/keychron_k10_max_iso_white_via.bin",
+          "size": 88260,
+          "sha256": "ac4b803d9f6c874cc3dcac3b4dd00d00cd8f61c2028b2f3d6b204dae2a649344",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "jis/rgb",
-          "folder": "jis-rgb",
-          "keymap": "via",
-          "pid": "0x0222",
-          "file": "firmware/k2_pro/jis-rgb/keychron_k2_pro_jis_rgb_via.bin",
-          "size": 61288,
-          "sha256": "75b9cd4376c0a2f945274a61d9dfb36bbe5750147599966f576c4875ce2ceaf7",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "jis/white",
-          "folder": "jis-white",
-          "keymap": "via",
-          "pid": "0x0225",
-          "file": "firmware/k2_pro/jis-white/keychron_k2_pro_jis_white_via.bin",
-          "size": 52848,
-          "sha256": "3dc3a7f68ed7f5a721784575985600d166caafe000a58ad8ce5545c17abff2e6",
-          "tested": false,
-          "tested_note": null
-        }
-      ]
-    },
-    {
-      "model": "k3_pro",
-      "name": "K3 Pro",
-      "variants": [
-        {
-          "variant": "ansi/rgb",
-          "folder": "ansi-rgb",
-          "keymap": "via",
-          "pid": "0x0230",
-          "file": "firmware/k3_pro/ansi-rgb/keychron_k3_pro_ansi_rgb_via.bin",
-          "size": 62408,
-          "sha256": "55f20432357168b2787ce137ce2521ad6dce02b44615ac3e8c7899ec6936aa70",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "ansi/white",
-          "folder": "ansi-white",
-          "keymap": "via",
-          "pid": "0x0233",
-          "file": "firmware/k3_pro/ansi-white/keychron_k3_pro_ansi_white_via.bin",
-          "size": 53972,
-          "sha256": "65c81b5ccb6026d0275eafb14829af7d03f1c3eb0351ebd3adaf260490753219",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/rgb",
-          "folder": "iso-rgb",
-          "keymap": "via",
-          "pid": "0x0231",
-          "file": "firmware/k3_pro/iso-rgb/keychron_k3_pro_iso_rgb_via.bin",
-          "size": 62432,
-          "sha256": "e8c32e85355df1b73c66273f3962da5ea4e8f60b32672511dbc5b06e97e59421",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/white",
-          "folder": "iso-white",
-          "keymap": "via",
-          "pid": "0x0234",
-          "file": "firmware/k3_pro/iso-white/keychron_k3_pro_iso_white_via.bin",
-          "size": 53968,
-          "sha256": "403e1074c7c246dc08bf9a22c6a7430556979971c401e5df71f6e79457b87f7d",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "jis/rgb",
-          "folder": "jis-rgb",
-          "keymap": "via",
-          "pid": "0x0232",
-          "file": "firmware/k3_pro/jis-rgb/keychron_k3_pro_jis_rgb_via.bin",
-          "size": 62444,
-          "sha256": "361604477d7d665daec28fc1fd4d63df39dc4080d95676ca3b885cc7cb618509",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "jis/white",
-          "folder": "jis-white",
-          "keymap": "via",
-          "pid": "0x0235",
-          "file": "firmware/k3_pro/jis-white/keychron_k3_pro_jis_white_via.bin",
-          "size": 53992,
-          "sha256": "a5d1434b459a171844b80007dacf354da262ac37475850ce9108f2d03942ddc7",
-          "tested": false,
-          "tested_note": null
-        }
-      ]
-    },
-    {
-      "model": "k4_pro",
-      "name": "K4 Pro",
-      "variants": [
-        {
-          "variant": "ansi/rgb",
-          "folder": "ansi-rgb",
-          "keymap": "via",
-          "pid": "0x0240",
-          "file": "firmware/k4_pro/ansi-rgb/keychron_k4_pro_ansi_rgb_via.bin",
-          "size": 61560,
-          "sha256": "74ff4125e2c295feaa8a29fd2e06123eb7a9ea30e14bdec61543eea29f8cab97",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "ansi/white",
-          "folder": "ansi-white",
-          "keymap": "via",
-          "pid": "0x0243",
-          "file": "firmware/k4_pro/ansi-white/keychron_k4_pro_ansi_white_via.bin",
-          "size": 53084,
-          "sha256": "462b2aecdd0b755d15b4006d3da23d6f4ad38725a1d7d0a91b1cdf436d8fb163",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/rgb",
-          "folder": "iso-rgb",
-          "keymap": "via",
-          "pid": "0x0241",
-          "file": "firmware/k4_pro/iso-rgb/keychron_k4_pro_iso_rgb_via.bin",
-          "size": 61576,
-          "sha256": "3ea0ca6739b1160b3403fa6a1a837a671f4d25f2c97bef0ff95ef4dfb1e98925",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/white",
-          "folder": "iso-white",
-          "keymap": "via",
-          "pid": "0x0244",
-          "file": "firmware/k4_pro/iso-white/keychron_k4_pro_iso_white_via.bin",
-          "size": 53004,
-          "sha256": "beb4d412444bbb8a5b1cdaf4c716657c12787016ec4bfcabc623f56219fd07b1",
-          "tested": false,
-          "tested_note": null
-        }
-      ]
-    },
-    {
-      "model": "k5_pro",
-      "name": "K5 Pro",
-      "variants": [
-        {
-          "variant": "ansi/rgb",
-          "folder": "ansi-rgb",
-          "keymap": "via",
-          "pid": "0x0250",
-          "file": "firmware/k5_pro/ansi-rgb/keychron_k5_pro_ansi_rgb_via.bin",
-          "size": 62012,
-          "sha256": "8b0112ee7981108bebedbdd267303a08362fbb3020d1c9abdde7d256881ec6e6",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "ansi/white",
-          "folder": "ansi-white",
-          "keymap": "via",
-          "pid": "0x0253",
-          "file": "firmware/k5_pro/ansi-white/keychron_k5_pro_ansi_white_via.bin",
-          "size": 53520,
-          "sha256": "30e5fea3c5ecaad8792f852d22658f26bd7d78beb73102fb042794d4403855b1",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/rgb",
-          "folder": "iso-rgb",
-          "keymap": "via",
-          "pid": "0x0251",
-          "file": "firmware/k5_pro/iso-rgb/keychron_k5_pro_iso_rgb_via.bin",
-          "size": 62028,
-          "sha256": "8797ffd51bb7c6c2a84a15b980e309eb083cea3d81343e27ab52b4d697f08e51",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/white",
-          "folder": "iso-white",
-          "keymap": "via",
-          "pid": "0x0254",
-          "file": "firmware/k5_pro/iso-white/keychron_k5_pro_iso_white_via.bin",
-          "size": 53520,
-          "sha256": "5d4634404717045915753f5901500283f208b7b94a6c333767cddfbb45ff56a4",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "jis/rgb",
-          "folder": "jis-rgb",
-          "keymap": "via",
-          "pid": "0x0252",
-          "file": "firmware/k5_pro/jis-rgb/keychron_k5_pro_jis_rgb_via.bin",
-          "size": 62044,
-          "sha256": "89700b849befb75e9286f9e4591e2b44bfbc7750c1c1bed614a3e714a49b34ba",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "jis/white",
-          "folder": "jis-white",
-          "keymap": "via",
-          "pid": "0x0255",
-          "file": "firmware/k5_pro/jis-white/keychron_k5_pro_jis_white_via.bin",
-          "size": 53540,
-          "sha256": "726a98d13120d999e3494010dc25c78daad0360276f1391d68bba4ee70aa87e6",
-          "tested": false,
-          "tested_note": null
-        }
-      ]
-    },
-    {
-      "model": "k6_pro",
-      "name": "K6 Pro",
-      "variants": [
-        {
-          "variant": "ansi/rgb",
-          "folder": "ansi-rgb",
-          "keymap": "via",
-          "pid": "0x0260",
-          "file": "firmware/k6_pro/ansi-rgb/keychron_k6_pro_ansi_rgb_via.bin",
-          "size": 60940,
-          "sha256": "25d233c522a747012122cde58278516f62ae5815277294375a9123f032c46f92",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "ansi/white",
-          "folder": "ansi-white",
-          "keymap": "via",
-          "pid": "0x0263",
-          "file": "firmware/k6_pro/ansi-white/keychron_k6_pro_ansi_white_via.bin",
-          "size": 52524,
-          "sha256": "dc61a3f7b71472cb7a57d249eea1e1bf55e50e77d87a00262c2e38fb9386fb1f",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/rgb",
-          "folder": "iso-rgb",
-          "keymap": "via",
-          "pid": "0x0261",
-          "file": "firmware/k6_pro/iso-rgb/keychron_k6_pro_iso_rgb_via.bin",
-          "size": 60964,
-          "sha256": "f46314c434e805d3b37f8bc1793989ed5aa81b5fd8206796cfed52a7ac5f6ecc",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/white",
-          "folder": "iso-white",
-          "keymap": "via",
-          "pid": "0x0264",
-          "file": "firmware/k6_pro/iso-white/keychron_k6_pro_iso_white_via.bin",
-          "size": 52520,
-          "sha256": "44c9d81f32abe5492acaf04554b3f7f79571d7fd118def62084860700918f852",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "jis/rgb",
-          "folder": "jis-rgb",
-          "keymap": "via",
-          "pid": "0x0262",
-          "file": "firmware/k6_pro/jis-rgb/keychron_k6_pro_jis_rgb_via.bin",
-          "size": 60972,
-          "sha256": "829a7f2b7cf491b7217136737e0203d213f9fe450eaba54f05c2e9fb55709a1b",
-          "tested": false,
-          "tested_note": null
-        }
-      ]
-    },
-    {
-      "model": "k7_pro",
-      "name": "K7 Pro",
-      "variants": [
-        {
-          "variant": "ansi/rgb",
-          "folder": "ansi-rgb",
-          "keymap": "via",
-          "pid": "0x0270",
-          "file": "firmware/k7_pro/ansi-rgb/keychron_k7_pro_ansi_rgb_via.bin",
-          "size": 62192,
-          "sha256": "19db6e290dec9399be5508d5060d2f8f83a5310db7233dc83f622d9989204809",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "ansi/white",
-          "folder": "ansi-white",
-          "keymap": "via",
-          "pid": "0x0273",
-          "file": "firmware/k7_pro/ansi-white/keychron_k7_pro_ansi_white_via.bin",
-          "size": 53792,
-          "sha256": "ad4494163cc3febc071dcc19c607743c53a2e6d89f0777aa45b1e6669b42194a",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/rgb",
-          "folder": "iso-rgb",
-          "keymap": "via",
-          "pid": "0x0271",
-          "file": "firmware/k7_pro/iso-rgb/keychron_k7_pro_iso_rgb_via.bin",
-          "size": 62216,
-          "sha256": "acb2d7c23bdd5b2fb2c5392d7d0e098db83ad874f797e6efdb688d9c7c6dc275",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/white",
-          "folder": "iso-white",
-          "keymap": "via",
-          "pid": "0x0274",
-          "file": "firmware/k7_pro/iso-white/keychron_k7_pro_iso_white_via.bin",
-          "size": 53792,
-          "sha256": "dff5d5ec611f87ff43497739726bfe067c03978983f2916c477235d58c9ac374",
-          "tested": false,
-          "tested_note": null
-        }
-      ]
-    },
-    {
-      "model": "k8_pro",
-      "name": "K8 Pro",
-      "variants": [
-        {
-          "variant": "ansi/rgb",
-          "folder": "ansi-rgb",
-          "keymap": "via",
-          "pid": "0x0280",
-          "file": "firmware/k8_pro/ansi-rgb/keychron_k8_pro_ansi_rgb_via.bin",
-          "size": 61324,
-          "sha256": "0161235dd38340cb3c8ebbb01afbe83882c06819bf8827d54a1bd1af8f6aa457",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "ansi/white",
-          "folder": "ansi-white",
-          "keymap": "via",
-          "pid": "0x0283",
-          "file": "firmware/k8_pro/ansi-white/keychron_k8_pro_ansi_white_via.bin",
-          "size": 52896,
-          "sha256": "f400de2a579036a14a3db404ba17a6cc84b6204d07ede8d513dca6fc9c46d616",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/rgb",
-          "folder": "iso-rgb",
-          "keymap": "via",
-          "pid": "0x0281",
-          "file": "firmware/k8_pro/iso-rgb/keychron_k8_pro_iso_rgb_via.bin",
-          "size": 61340,
-          "sha256": "0d7506cac1eb3c80e87d729f049803f26c19b4ca8cfca40166d2ac79525e1a02",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/white",
-          "folder": "iso-white",
-          "keymap": "via",
-          "pid": "0x0284",
-          "file": "firmware/k8_pro/iso-white/keychron_k8_pro_iso_white_via.bin",
-          "size": 52888,
-          "sha256": "c5553f4a78cd04ff82cafd9648495f9533d9397fef32ff7ffe08e91de558e1d8",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "jis/rgb",
-          "folder": "jis-rgb",
-          "keymap": "via",
-          "pid": "0x0282",
-          "file": "firmware/k8_pro/jis-rgb/keychron_k8_pro_jis_rgb_via.bin",
-          "size": 61360,
-          "sha256": "90860cd7fb24ae517dc3b58b863205d8c087caff5b092aee83075112dfc4475a",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "jis/white",
-          "folder": "jis-white",
-          "keymap": "via",
-          "pid": "0x0285",
-          "file": "firmware/k8_pro/jis-white/keychron_k8_pro_jis_white_via.bin",
-          "size": 52908,
-          "sha256": "5568d1df0727150491dff7eb5bea1d97ced81495b9ea46bdab11b4cbd9d1303a",
-          "tested": false,
-          "tested_note": null
-        }
-      ]
-    },
-    {
-      "model": "k9_pro",
-      "name": "K9 Pro",
-      "variants": [
-        {
-          "variant": "ansi/rgb",
-          "folder": "ansi-rgb",
-          "keymap": "via",
-          "pid": "0x0290",
-          "file": "firmware/k9_pro/ansi-rgb/keychron_k9_pro_ansi_rgb_via.bin",
-          "size": 61152,
-          "sha256": "e19bd7314b8c9525b2fa05ce6ecba43c9c65a2b2253f3246f967e3e3bd3afbff",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "ansi/white",
-          "folder": "ansi-white",
-          "keymap": "via",
-          "pid": "0x0293",
-          "file": "firmware/k9_pro/ansi-white/keychron_k9_pro_ansi_white_via.bin",
-          "size": 52872,
-          "sha256": "360ce870056c6e5da12d1e50bb29857ddcbaf9eae3b1c25bf8f39976c9951300",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/rgb",
-          "folder": "iso-rgb",
-          "keymap": "via",
-          "pid": "0x0291",
-          "file": "firmware/k9_pro/iso-rgb/keychron_k9_pro_iso_rgb_via.bin",
-          "size": 61156,
-          "sha256": "4a4a01311b4b0276b4f2d73265031d82f82696343d049d3129bf044a8bd747a5",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso/white",
-          "folder": "iso-white",
-          "keymap": "via",
-          "pid": "0x0294",
-          "file": "firmware/k9_pro/iso-white/keychron_k9_pro_iso_white_via.bin",
-          "size": 52864,
-          "sha256": "2e86669b91e2b93b843904a80a52123d30890fcb2ed25b90633238b54739b450",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "jis/rgb",
-          "folder": "jis-rgb",
-          "keymap": "via",
-          "pid": "0x0292",
-          "file": "firmware/k9_pro/jis-rgb/keychron_k9_pro_jis_rgb_via.bin",
-          "size": 61360,
-          "sha256": "b27ef63fa045a14bc3258a4a44447eec4b4d107cd7072b3fc0f9645ae231b838",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "jis/white",
-          "folder": "jis-white",
-          "keymap": "via",
-          "pid": "0x0295",
-          "file": "firmware/k9_pro/jis-white/keychron_k9_pro_jis_white_via.bin",
-          "size": 52952,
-          "sha256": "a98793dba87ff78f39f42baf3e887b0633d6232249c849abd6dde3c36730fbad",
-          "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
@@ -593,10 +100,12 @@
           "keymap": "via",
           "pid": "0x02A0",
           "file": "firmware/k10_pro/ansi-rgb/keychron_k10_pro_ansi_rgb_via.bin",
-          "size": 61816,
-          "sha256": "7420922f86dbadc348e300b76a1b178094a8f7464c7d6f296f83a4609401efe4",
+          "size": 62132,
+          "sha256": "3def21920c165e43629cdfa8dfab52b508c4d50e9675ad3d0b6a309783c23df4",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "ansi/white",
@@ -604,10 +113,12 @@
           "keymap": "via",
           "pid": "0x02A3",
           "file": "firmware/k10_pro/ansi-white/keychron_k10_pro_ansi_white_via.bin",
-          "size": 53332,
-          "sha256": "453f4ffb4a221ab0120aefb40e8b30c834e3d4fbd5f0c0bc31c0cc796de31c31",
+          "size": 53648,
+          "sha256": "a43ee4312cc7a0e8d7a3760bc1b31c5b76a8d4cbe5c7b3fcc6897be58277244f",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "iso/rgb",
@@ -615,10 +126,12 @@
           "keymap": "via",
           "pid": "0x02A1",
           "file": "firmware/k10_pro/iso-rgb/keychron_k10_pro_iso_rgb_via.bin",
-          "size": 62036,
-          "sha256": "f9c59afae3ce2be0e4cf4b33b19c67c2f18f3770a1a015ef4ba9b6a21005c911",
+          "size": 62352,
+          "sha256": "85678fbb9024871d43e13b39f1be5a7378457700befc10373d6c353c545c47c8",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "iso/white",
@@ -626,10 +139,12 @@
           "keymap": "via",
           "pid": "0x02A4",
           "file": "firmware/k10_pro/iso-white/keychron_k10_pro_iso_white_via.bin",
-          "size": 53588,
-          "sha256": "7fa8e6f324819d5cfa8c42b496f50004d44ec4ce9c75f885b941ad65e875536a",
+          "size": 53904,
+          "sha256": "5d64aab081d57933b25a0c5851319ad570e738f3e2cf039dcedd0dfd50be23b8",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "jis/rgb",
@@ -637,10 +152,12 @@
           "keymap": "via",
           "pid": "0x02A2",
           "file": "firmware/k10_pro/jis-rgb/keychron_k10_pro_jis_rgb_via.bin",
-          "size": 62052,
-          "sha256": "dcc0a13c8831e8999f04d4435ccc0a6140149ef812e320763cb60f1d741e35a8",
+          "size": 62368,
+          "sha256": "0172063575dfe9ac7d70e657aff93d530c517f305a82f44c3e3499650250a13b",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "jis/white",
@@ -648,10 +165,180 @@
           "keymap": "via",
           "pid": "0x02A5",
           "file": "firmware/k10_pro/jis-white/keychron_k10_pro_jis_white_via.bin",
-          "size": 53540,
-          "sha256": "57751fd03a77e1b0a9ae7d93c83680f48f42542e7f4a2f0da18675991f67e6ac",
+          "size": 53856,
+          "sha256": "7ae2d8260b67fce7476aee5b6252151b4b413c43934105e93ee0c269950f0d4a",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k10_version_2",
+      "name": "K10 Version 2",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0DA0",
+          "file": "firmware/k10_version_2/ansi-rgb/keychron_k10_version_2_ansi_rgb_via.bin",
+          "size": 67732,
+          "sha256": "e11bcdf6d279c802e0c743624bc386d5b1127143cf103a5f17b9127aae8d6e09",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0DA3",
+          "file": "firmware/k10_version_2/ansi-white/keychron_k10_version_2_ansi_white_via.bin",
+          "size": 60196,
+          "sha256": "e94622f743144451f8942b19b574571502fa63047caae948289ab4bedf2b297b",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0DA1",
+          "file": "firmware/k10_version_2/iso-rgb/keychron_k10_version_2_iso_rgb_via.bin",
+          "size": 67736,
+          "sha256": "f8ca8b21afe719debdd8762badda4ad386b5213f4bbba0fe1dd7d10cb2e54351",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0DA4",
+          "file": "firmware/k10_version_2/iso-white/keychron_k10_version_2_iso_white_via.bin",
+          "size": 60200,
+          "sha256": "65e372b809e550281f02f46387c6c9baf0b5823723172acae93e452472cb58f0",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0DA2",
+          "file": "firmware/k10_version_2/jis-rgb/keychron_k10_version_2_jis_rgb_via.bin",
+          "size": 67756,
+          "sha256": "eb2c1c9743911dfeec62729ff0faf0eb31951920a0984bd98c2605da271d118b",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0DA5",
+          "file": "firmware/k10_version_2/jis-white/keychron_k10_version_2_jis_white_via.bin",
+          "size": 60212,
+          "sha256": "bffd34300b900cd2c311046a842f94756b953ea6ec1024e97531708a57eb3075",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k11_max",
+      "name": "K11 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder/rgb",
+          "folder": "ansi_encoder-rgb",
+          "keymap": "via",
+          "pid": "0x0AB3",
+          "file": "firmware/k11_max/ansi_encoder-rgb/keychron_k11_max_ansi_encoder_rgb_via.bin",
+          "size": 96904,
+          "sha256": "8d08f54f58e376a8be406ea8cedcf722493691b64d85948acd80e40417766248",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi_encoder/white",
+          "folder": "ansi_encoder-white",
+          "keymap": "via",
+          "pid": "0x0AB9",
+          "file": "firmware/k11_max/ansi_encoder-white/keychron_k11_max_ansi_encoder_white_via.bin",
+          "size": 88580,
+          "sha256": "83b8c5e6fb9222af9ebdaf054c03c9028c4ae011afc597cf594febd1e96fd272",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder/rgb",
+          "folder": "iso_encoder-rgb",
+          "keymap": "via",
+          "pid": "0x0AB4",
+          "file": "firmware/k11_max/iso_encoder-rgb/keychron_k11_max_iso_encoder_rgb_via.bin",
+          "size": 96920,
+          "sha256": "7bd8e77200e9955c20fe327af35fc22070ccc002872ce2f3631bfd8694aa176b",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder/white",
+          "folder": "iso_encoder-white",
+          "keymap": "via",
+          "pid": "0x0ABA",
+          "file": "firmware/k11_max/iso_encoder-white/keychron_k11_max_iso_encoder_white_via.bin",
+          "size": 88584,
+          "sha256": "03cf71c4167f2ecea673e89ab872bd3f0b6abb9a896044190a420af440f0e5f2",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis_encoder/rgb",
+          "folder": "jis_encoder-rgb",
+          "keymap": "via",
+          "pid": "0x0AB5",
+          "file": "firmware/k11_max/jis_encoder-rgb/keychron_k11_max_jis_encoder_rgb_via.bin",
+          "size": 96872,
+          "sha256": "ab5d62061018795991c4b389a8460715dd837a8ec6c51e60d62cc7f55fa97978",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis_encoder/white",
+          "folder": "jis_encoder-white",
+          "keymap": "via",
+          "pid": "0x0ABB",
+          "file": "firmware/k11_max/jis_encoder-white/keychron_k11_max_jis_encoder_white_via.bin",
+          "size": 88464,
+          "sha256": "d586c50d28eeec860ced1fe3143f74b5a11793dceb534a6480b0f53dc200c7ab",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
@@ -665,10 +352,12 @@
           "keymap": "via",
           "pid": "0x02B0",
           "file": "firmware/k11_pro/ansi-rgb/keychron_k11_pro_ansi_rgb_via.bin",
-          "size": 61096,
-          "sha256": "3f40511819ec5061d337e16a1c29ecd4fd0b2c95665d6e0b0900971f6f81dbc7",
+          "size": 61404,
+          "sha256": "2592eb2a2eeff98c283e045fc4e19fe8626de87aa76f6f7a2cc211b649bc81ef",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "ansi/white",
@@ -676,10 +365,12 @@
           "keymap": "via",
           "pid": "0x02B3",
           "file": "firmware/k11_pro/ansi-white/keychron_k11_pro_ansi_white_via.bin",
-          "size": 52684,
-          "sha256": "405f6d6a1363c231faa11625ec2dc43d64bdf309f64e2ce595e48bddb807eff4",
+          "size": 53000,
+          "sha256": "0e7edcf61c5a6b2dd7f6f62bab0c2b31cb8856cd52b7e5f508dface3e8b4ed24",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "ansi_encoder/rgb",
@@ -687,10 +378,12 @@
           "keymap": "via",
           "pid": "0x02B6",
           "file": "firmware/k11_pro/ansi_encoder-rgb/keychron_k11_pro_ansi_encoder_rgb_via.bin",
-          "size": 62420,
-          "sha256": "b466c4a6e761b40e62375b796869d8624a2aa3907194c5e0fca97dc4bc29a3f1",
+          "size": 62748,
+          "sha256": "2e997d2308ec5d9be2bfa3eb7f672ffda4aa2ecc310d3f09f26dd235a23d54e2",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "ansi_encoder/white",
@@ -698,10 +391,12 @@
           "keymap": "via",
           "pid": "0x02B9",
           "file": "firmware/k11_pro/ansi_encoder-white/keychron_k11_pro_ansi_encoder_white_via.bin",
-          "size": 54004,
-          "sha256": "988e21fcb0e496f19c9396d1c0076b0594b913bbc4da6327f5133367ab2d4e06",
+          "size": 54340,
+          "sha256": "650d2e0b67ee1400f10749e0afdd743c37774bf17eb53d4a66b98f1defdc1bff",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
@@ -715,10 +410,12 @@
           "keymap": "via",
           "pid": "0x02C0",
           "file": "firmware/k12_pro/ansi-rgb/keychron_k12_pro_ansi_rgb_via.bin",
-          "size": 60892,
-          "sha256": "902a34877b23e619032a55b515cb4b07ed137cad3266769f4a300967142f6e1e",
+          "size": 61200,
+          "sha256": "cdcf29497de90b0c34a479464d16427bcbddb0ae0772a5495a2e153bd08c64b2",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "ansi/white",
@@ -726,10 +423,70 @@
           "keymap": "via",
           "pid": "0x02C3",
           "file": "firmware/k12_pro/ansi-white/keychron_k12_pro_ansi_white_via.bin",
-          "size": 52608,
-          "sha256": "ab5002efa0c980557f855b9d400d5c47190641883283dc3a6141b05784e53025",
+          "size": 52924,
+          "sha256": "62218bf687a8858b31de76cf415e53eef21f503f2938e99297d09b45a79af401",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k13_max",
+      "name": "K13 Max",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0AD0",
+          "file": "firmware/k13_max/ansi-rgb/keychron_k13_max_ansi_rgb_via.bin",
+          "size": 96360,
+          "sha256": "3be23a3edc8a5fd422240ab28b528701d5d5b86af38317118c679720dac3a613",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0AD3",
+          "file": "firmware/k13_max/ansi-white/keychron_k13_max_ansi_white_via.bin",
+          "size": 87996,
+          "sha256": "50a2d243c24b340d61002c87cf4796cc30645aa9d5e55d57607988df6e639a3c",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0AD1",
+          "file": "firmware/k13_max/iso-rgb/keychron_k13_max_iso_rgb_via.bin",
+          "size": 96368,
+          "sha256": "ecb071e9d72f523b894b91d8b0defb2c123b32881ad7925dd896e4e916daf456",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0AD4",
+          "file": "firmware/k13_max/iso-white/keychron_k13_max_iso_white_via.bin",
+          "size": 88000,
+          "sha256": "84d2e9e4ceaeee305bcaa8a4de8dbf7125ad269bc30a34e02e12dc7a62685757",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
@@ -743,10 +500,12 @@
           "keymap": "via",
           "pid": "0x02D0",
           "file": "firmware/k13_pro/ansi-rgb/keychron_k13_pro_ansi_rgb_via.bin",
-          "size": 61712,
-          "sha256": "d7e44787265107b61221c91d51844f1eeb7d52572e6a6379016ec69f79018e53",
+          "size": 62028,
+          "sha256": "8d354a182995cd86e5718e3a441aa6a1458a9712818c33c46cd2857cbea70588",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "ansi/white",
@@ -754,10 +513,12 @@
           "keymap": "via",
           "pid": "0x02D3",
           "file": "firmware/k13_pro/ansi-white/keychron_k13_pro_ansi_white_via.bin",
-          "size": 53264,
-          "sha256": "28116d7c4ba708189b1bc1884d44e09eb35188caf111a5b66a2aa28f3696c12b",
+          "size": 53580,
+          "sha256": "f28b79a9f107b7e2318e4ca115037141616fe0c6b7fd21a579a122b889bdf10f",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "iso/rgb",
@@ -765,10 +526,12 @@
           "keymap": "via",
           "pid": "0x02D1",
           "file": "firmware/k13_pro/iso-rgb/keychron_k13_pro_iso_rgb_via.bin",
-          "size": 61728,
-          "sha256": "e478f0636a613ddde03e17b8c5ac4f8d037255eb45142d2ba27be33ffe0c921f",
-          "tested": true,
-          "tested_note": "Flashed and used on one physical unit (maintainer). Bursts of repeated keys not yet confirmed fixed long-term; see README warnings."
+          "size": 62044,
+          "sha256": "de9bbdc9c9cd31edcab3a242b8e67c6b0d81d57354904416d6bd4a1adc9cfe0c",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "iso/white",
@@ -776,10 +539,12 @@
           "keymap": "via",
           "pid": "0x02D4",
           "file": "firmware/k13_pro/iso-white/keychron_k13_pro_iso_white_via.bin",
-          "size": 53264,
-          "sha256": "14b98c279b7281ef1fb597da1f157727649a0a261118792ccbcc7288bbf9aedb",
+          "size": 53580,
+          "sha256": "c8663a262b9f01e95fe3b3090175783920ae68115efba83e99696f846f827085",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
@@ -793,10 +558,12 @@
           "keymap": "via",
           "pid": "0x02E0",
           "file": "firmware/k14_pro/ansi-rgb/keychron_k14_pro_ansi_rgb_via.bin",
-          "size": 61244,
-          "sha256": "ec7eb761c3a172615cc2bca482585aaa124be76d3d523460d2c0c236765670e3",
+          "size": 61560,
+          "sha256": "50ad3bbcb6a341cbddfab1f6142a0c844484ad427a3bbe6494fa57686e96526b",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "ansi/white",
@@ -804,10 +571,70 @@
           "keymap": "via",
           "pid": "0x02E3",
           "file": "firmware/k14_pro/ansi-white/keychron_k14_pro_ansi_white_via.bin",
-          "size": 52708,
-          "sha256": "e0cafbb25775dbd05e04959b2e15e816e825625ece00cf4fbee455c8666b0139",
+          "size": 53016,
+          "sha256": "912a374195c7d4a6f5965e0d7d2c54b2444365bd1602b1cfb7d576cfa1ce985c",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k15_max",
+      "name": "K15 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder/rgb",
+          "folder": "ansi_encoder-rgb",
+          "keymap": "via",
+          "pid": "0x0AF0",
+          "file": "firmware/k15_max/ansi_encoder-rgb/keychron_k15_max_ansi_encoder_rgb_via.bin",
+          "size": 97020,
+          "sha256": "f605ef7322bb47faef1f59c98cb193bbdbf498f4fcd07971271e88d703968309",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi_encoder/white",
+          "folder": "ansi_encoder-white",
+          "keymap": "via",
+          "pid": "0x0AF3",
+          "file": "firmware/k15_max/ansi_encoder-white/keychron_k15_max_ansi_encoder_white_via.bin",
+          "size": 88652,
+          "sha256": "81ccbcb3ff132f42032882579d5f01fc9427422e8da51ae13cd9dc5cef0ca625",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder/rgb",
+          "folder": "iso_encoder-rgb",
+          "keymap": "via",
+          "pid": "0x0AF1",
+          "file": "firmware/k15_max/iso_encoder-rgb/keychron_k15_max_iso_encoder_rgb_via.bin",
+          "size": 97028,
+          "sha256": "6977e30f4825f50127b1f136987666566b97a1229b6b80fb5758271b9b890786",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder/white",
+          "folder": "iso_encoder-white",
+          "keymap": "via",
+          "pid": "0x0AF4",
+          "file": "firmware/k15_max/iso_encoder-white/keychron_k15_max_iso_encoder_white_via.bin",
+          "size": 88660,
+          "sha256": "e155f6e4265ff5916c154e5e00ce666c1c3a375bbabf1d648070c56c81562207",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
@@ -821,10 +648,12 @@
           "keymap": "via",
           "pid": "0x02F6",
           "file": "firmware/k15_pro/ansi_encoder-rgb/keychron_k15_pro_ansi_encoder_rgb_via.bin",
-          "size": 62524,
-          "sha256": "cb7c33e20ffe43b429536aae28ba206d896f41d5b1995d28306537c553545ece",
+          "size": 62852,
+          "sha256": "93734ba1a0d14a08c0883833d48dc9df4db6016750755c1ffb90d60bdc73129a",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "ansi_encoder/white",
@@ -832,10 +661,96 @@
           "keymap": "via",
           "pid": "0x02F9",
           "file": "firmware/k15_pro/ansi_encoder-white/keychron_k15_pro_ansi_encoder_white_via.bin",
-          "size": 54080,
-          "sha256": "02f86350fd1f9a55a7b2a440f0d3c44635be87024533337524b12ce5df69991e",
+          "size": 54408,
+          "sha256": "6538d3fb130d74b8e4191e94ced086d60ec56385db8c4d985becc83080104feb",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k17_max",
+      "name": "K17 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder/rgb",
+          "folder": "ansi_encoder-rgb",
+          "keymap": "via",
+          "pid": "0x0A00",
+          "file": "firmware/k17_max/ansi_encoder-rgb/keychron_k17_max_ansi_encoder_rgb_via.bin",
+          "size": 97328,
+          "sha256": "4edb36844183e2c4e09550667a6c6cd49dea1c6c27858fd427110f56bc10fd8b",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi_encoder/white",
+          "folder": "ansi_encoder-white",
+          "keymap": "via",
+          "pid": "0x0A03",
+          "file": "firmware/k17_max/ansi_encoder-white/keychron_k17_max_ansi_encoder_white_via.bin",
+          "size": 88964,
+          "sha256": "d71b4b03ca17d9291e4e91cbf14670c48a0a3068a80a9941d55f588e5e7cc849",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder/rgb",
+          "folder": "iso_encoder-rgb",
+          "keymap": "via",
+          "pid": "0x0A01",
+          "file": "firmware/k17_max/iso_encoder-rgb/keychron_k17_max_iso_encoder_rgb_via.bin",
+          "size": 97336,
+          "sha256": "dc2748a9d21394a11696e375a42d679adce2271d9a92213290876ff23264009b",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder/white",
+          "folder": "iso_encoder-white",
+          "keymap": "via",
+          "pid": "0x0A04",
+          "file": "firmware/k17_max/iso_encoder-white/keychron_k17_max_iso_encoder_white_via.bin",
+          "size": 88892,
+          "sha256": "10160b302e16b772cefee7a4b269f59cb9b98b8b49cdc28abcb65e8e8d758c14",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis_encoder/rgb",
+          "folder": "jis_encoder-rgb",
+          "keymap": "via",
+          "pid": "0x0A02",
+          "file": "firmware/k17_max/jis_encoder-rgb/keychron_k17_max_jis_encoder_rgb_via.bin",
+          "size": 97360,
+          "sha256": "a4d9af600275f5e554f4531d427c92449065951832aae54e5b5fc63b46a664a5",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis_encoder/white",
+          "folder": "jis_encoder-white",
+          "keymap": "via",
+          "pid": "0x0A05",
+          "file": "firmware/k17_max/jis_encoder-white/keychron_k17_max_jis_encoder_white_via.bin",
+          "size": 88980,
+          "sha256": "1776f58e85ac19ed880d33b45cef8e7ffb9a39d052a39f56495a95fe8a9e290c",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
@@ -849,10 +764,12 @@
           "keymap": "via",
           "pid": "0x0206",
           "file": "firmware/k17_pro/ansi_encoder-rgb/keychron_k17_pro_ansi_encoder_rgb_via.bin",
-          "size": 62936,
-          "sha256": "d44fdc34f4c558a5dc97ec47d860e207269ccef61fb1102a83e1e53e91a1d586",
+          "size": 63264,
+          "sha256": "54ffef12b07ced534b114394bdd16d566859459c0ed423e903b90a9a2a379175",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "ansi_encoder/white",
@@ -860,10 +777,12 @@
           "keymap": "via",
           "pid": "0x0209",
           "file": "firmware/k17_pro/ansi_encoder-white/keychron_k17_pro_ansi_encoder_white_via.bin",
-          "size": 54436,
-          "sha256": "9de5800a6f8c279a01900cac2acbe5087bb632dd8b74c75b3eb741b7edeaa105",
+          "size": 54764,
+          "sha256": "e79b80ac4b62704314b1ed1249ca21f10268655da7205002bd385a7025cf46b3",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "iso_encoder/rgb",
@@ -871,10 +790,12 @@
           "keymap": "via",
           "pid": "0x0207",
           "file": "firmware/k17_pro/iso_encoder-rgb/keychron_k17_pro_iso_encoder_rgb_via.bin",
-          "size": 62940,
-          "sha256": "a9032006ac2b9985c7707ec126e407739a5919a8b1cf0b3100bda883e4a9f3db",
+          "size": 63268,
+          "sha256": "9980c2abcbbceda01b4b0338de33667710317d071b9d0b3fe66c00dc0e81b1fa",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "iso_encoder/white",
@@ -882,250 +803,1710 @@
           "keymap": "via",
           "pid": "0x020A",
           "file": "firmware/k17_pro/iso_encoder-white/keychron_k17_pro_iso_encoder_white_via.bin",
-          "size": 54436,
-          "sha256": "9411d7589f043222f19a8239f862082d93ec7a1e16308c4a5ab087951d671658",
+          "size": 54764,
+          "sha256": "5c1bb8938f3494bc251a455c07155898b36ad49f4025b1e3a13e32150f341c8d",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
     {
-      "model": "q1_pro",
-      "name": "Q1 Pro",
+      "model": "k1_max",
+      "name": "K1 Max",
       "variants": [
         {
-          "variant": "ansi_knob",
-          "folder": "ansi_knob",
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
           "keymap": "via",
-          "pid": "0x0610",
-          "file": "firmware/q1_pro/ansi_knob/keychron_q1_pro_ansi_knob_via.bin",
-          "size": 62144,
-          "sha256": "94bd96da2dbd92baf9423bccbe1b23a8e810328462bbf5214987d740940149c4",
+          "pid": "0x0A10",
+          "file": "firmware/k1_max/ansi-rgb/keychron_k1_max_ansi_rgb_via.bin",
+          "size": 96336,
+          "sha256": "0997760033c213e3f08fb1120228a5a0377298c643a8d5dfd0e70e3f178be1b4",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
-          "variant": "iso_knob",
-          "folder": "iso_knob",
+          "variant": "ansi/white",
+          "folder": "ansi-white",
           "keymap": "via",
-          "pid": "0x0611",
-          "file": "firmware/q1_pro/iso_knob/keychron_q1_pro_iso_knob_via.bin",
-          "size": 62160,
-          "sha256": "2f50002d4f777382a5bfcbd0f207d9034c04e4ddd67a367716298a22e5e3d5f5",
+          "pid": "0x0A13",
+          "file": "firmware/k1_max/ansi-white/keychron_k1_max_ansi_white_via.bin",
+          "size": 87976,
+          "sha256": "c713a654898f83b4f5285381b76fc03a9a0eff7ac8ad8c43dca94b8fe48ce464",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
-          "variant": "jis_encoder",
-          "folder": "jis_encoder",
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
           "keymap": "via",
-          "pid": "0xA612",
-          "file": "firmware/q1_pro/jis_encoder/keychron_q1_pro_jis_encoder_via.bin",
-          "size": 62184,
-          "sha256": "0caa64cd64e24d7c05ddb104f9262d51b0dfec85c749952c2bb1d2ce1ea48360",
+          "pid": "0x0A11",
+          "file": "firmware/k1_max/iso-rgb/keychron_k1_max_iso_rgb_via.bin",
+          "size": 96344,
+          "sha256": "0ec3605d07937b4a3ebe44b0c190701df8146336245d42783ef6adf1100ac977",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0A14",
+          "file": "firmware/k1_max/iso-white/keychron_k1_max_iso_white_via.bin",
+          "size": 87980,
+          "sha256": "c6470b76747ee9e9e8b9f876f2f2a45ba663f4ce3ca62ef32836770e2af2d549",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0A12",
+          "file": "firmware/k1_max/jis-rgb/keychron_k1_max_jis_rgb_via.bin",
+          "size": 96364,
+          "sha256": "e164c9d8926e1f5aea5d1011c8021a6d490244a4428776ce0add7e9ddf12a1bc",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0A15",
+          "file": "firmware/k1_max/jis-white/keychron_k1_max_jis_white_via.bin",
+          "size": 87996,
+          "sha256": "9243cf48fca1cbe660004597bf08b96ffcec79a688b4152ea2be18c5a5b2d2d4",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
     {
-      "model": "q2_pro",
-      "name": "Q2 Pro",
+      "model": "k1_pro",
+      "name": "K1 Pro",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0210",
+          "file": "firmware/k1_pro/ansi-rgb/keychron_k1_pro_ansi_rgb_via.bin",
+          "size": 62028,
+          "sha256": "440d27f1c6e49c657d67e740eb36e6e7034103927669d2d783fcc684bb10ecd0",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0213",
+          "file": "firmware/k1_pro/ansi-white/keychron_k1_pro_ansi_white_via.bin",
+          "size": 53584,
+          "sha256": "f7f1134156d294305a88ba63e1c31c36b7c7eb254da2647d24fb83d531b21fda",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0211",
+          "file": "firmware/k1_pro/iso-rgb/keychron_k1_pro_iso_rgb_via.bin",
+          "size": 62044,
+          "sha256": "71efca082d3b386ff28991c2908f79d39a16c48da5b86f469f653ce96f867986",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0214",
+          "file": "firmware/k1_pro/iso-white/keychron_k1_pro_iso_white_via.bin",
+          "size": 53588,
+          "sha256": "18184c4cf9014c268fd961345c4195de9f861c5112f813b53b5695a66247be95",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k1_version_6",
+      "name": "K1 Version 6",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0D10",
+          "file": "firmware/k1_version_6/ansi-rgb/keychron_k1_version_6_ansi_rgb_via.bin",
+          "size": 67624,
+          "sha256": "571936f2934a562b8e8382373ca7a6268e26a9c2692be27b34620887992b218e",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0D13",
+          "file": "firmware/k1_version_6/ansi-white/keychron_k1_version_6_ansi_white_via.bin",
+          "size": 60128,
+          "sha256": "32bd31bede304358c3b918d592a6952c0e482ed25ac9073379684b5217bc4b8b",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0D11",
+          "file": "firmware/k1_version_6/iso-rgb/keychron_k1_version_6_iso_rgb_via.bin",
+          "size": 67660,
+          "sha256": "4608f4c2a53ac0117dc8687213956dec64fc6028a34e64437a9fa4b3c6616354",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0D14",
+          "file": "firmware/k1_version_6/iso-white/keychron_k1_version_6_iso_white_via.bin",
+          "size": 60160,
+          "sha256": "26bd54360daa4294e890134a404df311ac12e0573f34e978685a4993328d4661",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0D12",
+          "file": "firmware/k1_version_6/jis-rgb/keychron_k1_version_6_jis_rgb_via.bin",
+          "size": 67684,
+          "sha256": "f2e32f12c3f2dc0c6791059653ba6d7d58be352c6397bee281263afcff254021",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0D15",
+          "file": "firmware/k1_version_6/jis-white/keychron_k1_version_6_jis_white_via.bin",
+          "size": 60180,
+          "sha256": "dc50270b561dc9390dc47f2f225cd86355b881f945782b0072e648d3d014ca4f",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k2_max",
+      "name": "K2 Max",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0A20",
+          "file": "firmware/k2_max/ansi-rgb/keychron_k2_max_ansi_rgb_via.bin",
+          "size": 95532,
+          "sha256": "50c4f995ec7b716fbed03e3e6b73922ca948aff6ef9533021f29c13b5be01883",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0A23",
+          "file": "firmware/k2_max/ansi-white/keychron_k2_max_ansi_white_via.bin",
+          "size": 87176,
+          "sha256": "e683aa92681f299f068902b90bda7284a9f49abfe83b6375635f0c689d182b58",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0A21",
+          "file": "firmware/k2_max/iso-rgb/keychron_k2_max_iso_rgb_via.bin",
+          "size": 95556,
+          "sha256": "65a5363958cb7dfd96ac8c6a1f7e6838df1c31ef495e50be2ad5be66c5db6c5c",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0A24",
+          "file": "firmware/k2_max/iso-white/keychron_k2_max_iso_white_via.bin",
+          "size": 87192,
+          "sha256": "3dd352dfee8b7117b04a1ff534186293e2ae9b5363f9d4fb67c212a3cddcdf7e",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0A22",
+          "file": "firmware/k2_max/jis-rgb/keychron_k2_max_jis_rgb_via.bin",
+          "size": 95580,
+          "sha256": "7f45197626be77ebef73828fbdac92c53302144c891af8557012d51551f07db9",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0A25",
+          "file": "firmware/k2_max/jis-white/keychron_k2_max_jis_white_via.bin",
+          "size": 87204,
+          "sha256": "166287a52a0ae801cb994efd90967cec03bfdfc0a885a6d1100d7258a3b06558",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k2_pro",
+      "name": "K2 Pro",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0220",
+          "file": "firmware/k2_pro/ansi-rgb/keychron_k2_pro_ansi_rgb_via.bin",
+          "size": 61568,
+          "sha256": "dea4fb4faea1b9a6610ac1fc06cb501d3fce1dc66d036403e9da7e94719f17e2",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0223",
+          "file": "firmware/k2_pro/ansi-white/keychron_k2_pro_ansi_white_via.bin",
+          "size": 53132,
+          "sha256": "42c65a46b33ca131bcf09f55de65bfb5fb1b5a22d28456a62715338eb0978367",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0221",
+          "file": "firmware/k2_pro/iso-rgb/keychron_k2_pro_iso_rgb_via.bin",
+          "size": 61592,
+          "sha256": "329ddeb67577913d7322110eb984d6c92642fd096a629632bb34c8599f14d87d",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0224",
+          "file": "firmware/k2_pro/iso-white/keychron_k2_pro_iso_white_via.bin",
+          "size": 53132,
+          "sha256": "e0c1f2a9a4feeae98b87695b0ff97a2b706dcbc8b1ff54c561a49cf2c9bad2cc",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0222",
+          "file": "firmware/k2_pro/jis-rgb/keychron_k2_pro_jis_rgb_via.bin",
+          "size": 61604,
+          "sha256": "6f428bf600c43ca37fb795dbe13a85694898875215bc5a2a2b1d16964bd31e09",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0225",
+          "file": "firmware/k2_pro/jis-white/keychron_k2_pro_jis_white_via.bin",
+          "size": 53156,
+          "sha256": "48b6140efef592f488d4b9b916fc37adc30fc18b1b733012a7e99428f2675b57",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k2_version_3",
+      "name": "K2 Version 3",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0D20",
+          "file": "firmware/k2_version_3/ansi-rgb/keychron_k2_version_3_ansi_rgb_via.bin",
+          "size": 66916,
+          "sha256": "1b4093ca603a3c690de78060a4a114806bf2391e79affecebcef566d9bee59e0",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0D23",
+          "file": "firmware/k2_version_3/ansi-white/keychron_k2_version_3_ansi_white_via.bin",
+          "size": 59456,
+          "sha256": "3e757304eee17fb6160525ef23a46e009a43e3adb12ed4ab65eb0f9b69be5e0d",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0D21",
+          "file": "firmware/k2_version_3/iso-rgb/keychron_k2_version_3_iso_rgb_via.bin",
+          "size": 66920,
+          "sha256": "a7fa00c61673fcbc9ca0beb602f0541275f077f728eb48d452d13d4ab8884a88",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0D24",
+          "file": "firmware/k2_version_3/iso-white/keychron_k2_version_3_iso_white_via.bin",
+          "size": 59460,
+          "sha256": "bc09e76bdf5e4712d02f21c038a6cde8b6ae7d9a9f9355eab78e91f0cb1d0326",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0D22",
+          "file": "firmware/k2_version_3/jis-rgb/keychron_k2_version_3_jis_rgb_via.bin",
+          "size": 66936,
+          "sha256": "bddc5a366e2d92a3a4b07c465ce0939e4e7fe96f6c044763b477ca3428f7c344",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0D25",
+          "file": "firmware/k2_version_3/jis-white/keychron_k2_version_3_jis_white_via.bin",
+          "size": 59468,
+          "sha256": "5832c594bdec5eb175c885b6fd2393a4eb834a460253680fa804f2258abc5cc3",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k3_max",
+      "name": "K3 Max",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0A30",
+          "file": "firmware/k3_max/ansi-rgb/keychron_k3_max_ansi_rgb_via.bin",
+          "size": 95604,
+          "sha256": "ff610a0c9ceaf1328c6959ac654b45271474cf4d9412a30fe7d889d7756cecbe",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0A33",
+          "file": "firmware/k3_max/ansi-white/keychron_k3_max_ansi_white_via.bin",
+          "size": 87248,
+          "sha256": "95184f43831f01968a54c7b9ea404e8cf6ab7b69966a65a7bd7b3c486e9c4e44",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0A31",
+          "file": "firmware/k3_max/iso-rgb/keychron_k3_max_iso_rgb_via.bin",
+          "size": 95620,
+          "sha256": "e5750964d6beccb24d4cbb35432eae0d91f808b0078adbb720078de33676f8f6",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0A34",
+          "file": "firmware/k3_max/iso-white/keychron_k3_max_iso_white_via.bin",
+          "size": 87256,
+          "sha256": "598c416eb5b7d2de00301f226df927088e938016458207970f3f87f60ea54e60",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0A32",
+          "file": "firmware/k3_max/jis-rgb/keychron_k3_max_jis_rgb_via.bin",
+          "size": 95628,
+          "sha256": "f3dc488eeb3116102d6d07697559829516502fbf1b477fec791b18e3f7056f76",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0A35",
+          "file": "firmware/k3_max/jis-white/keychron_k3_max_jis_white_via.bin",
+          "size": 87268,
+          "sha256": "7f5c402a06c347acb8214b6a6022557112ddeddd60db492d474bc37d903cbf03",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k3_pro",
+      "name": "K3 Pro",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0230",
+          "file": "firmware/k3_pro/ansi-rgb/keychron_k3_pro_ansi_rgb_via.bin",
+          "size": 62716,
+          "sha256": "600cc4349e888ed0d8fe1fc42f1792de6d30bddd90e82f42631476edaf1ac9c9",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0233",
+          "file": "firmware/k3_pro/ansi-white/keychron_k3_pro_ansi_white_via.bin",
+          "size": 54288,
+          "sha256": "84705aadde4714bc49051dc46f4cd1b6747fac89e4e3970e0c16734ada5d06d7",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0231",
+          "file": "firmware/k3_pro/iso-rgb/keychron_k3_pro_iso_rgb_via.bin",
+          "size": 62740,
+          "sha256": "9e68484acd0451b747afb3161ef43d3b34fb169d04debff0e8dc384cd66f83a9",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0234",
+          "file": "firmware/k3_pro/iso-white/keychron_k3_pro_iso_white_via.bin",
+          "size": 54284,
+          "sha256": "6da9d354ff9fc0cb3ee9125166da3f4e13e2599930d301d5b1c2a5cea3ce4c0a",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0232",
+          "file": "firmware/k3_pro/jis-rgb/keychron_k3_pro_jis_rgb_via.bin",
+          "size": 62752,
+          "sha256": "71f137989f07ecf89fbd81346e17d6ef31644d3c96073d0cc5db317db5fe551e",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0235",
+          "file": "firmware/k3_pro/jis-white/keychron_k3_pro_jis_white_via.bin",
+          "size": 54308,
+          "sha256": "585f9e3d381837cc4798f5bf71b3b50fcd169180e31073c7795948137b3a1a0f",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k3_version_3",
+      "name": "K3 Version 3",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0D30",
+          "file": "firmware/k3_version_3/ansi-rgb/keychron_k3_version_3_ansi_rgb_via.bin",
+          "size": 66956,
+          "sha256": "fb6bcfc9b78c7d03d08cfd987e9d7c132b9e1cb74cd34666efa07601b81d0eb3",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0D33",
+          "file": "firmware/k3_version_3/ansi-white/keychron_k3_version_3_ansi_white_via.bin",
+          "size": 59484,
+          "sha256": "de2e3b7ecfff30fd9f823a08bb1ea2105059897b244d0316a8cc34ea465582cf",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0D31",
+          "file": "firmware/k3_version_3/iso-rgb/keychron_k3_version_3_iso_rgb_via.bin",
+          "size": 66960,
+          "sha256": "ae151fb869dd061e831d8f397657e63a39c57b97768b12f0086018149651a489",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0D34",
+          "file": "firmware/k3_version_3/iso-white/keychron_k3_version_3_iso_white_via.bin",
+          "size": 59496,
+          "sha256": "53d8aa4cc2b824c91cd28354d04eedcac180f52b4c0e05df47c082b6f5e98dd2",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0D32",
+          "file": "firmware/k3_version_3/jis-rgb/keychron_k3_version_3_jis_rgb_via.bin",
+          "size": 67040,
+          "sha256": "86dc290002cc84e9df4b58201593babaee47498c97d7b15fb637dccce38e2316",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0D35",
+          "file": "firmware/k3_version_3/jis-white/keychron_k3_version_3_jis_white_via.bin",
+          "size": 59508,
+          "sha256": "ed56c359bdac108a2929b427bb7bbf13a3c87fd8320c139fc47ca9395a7bbe2d",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k4_pro",
+      "name": "K4 Pro",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0240",
+          "file": "firmware/k4_pro/ansi-rgb/keychron_k4_pro_ansi_rgb_via.bin",
+          "size": 61876,
+          "sha256": "9a77cb91416e521e61edfef710fa7d9af74d1d3e83262ee9fd73435a52a7aec5",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0243",
+          "file": "firmware/k4_pro/ansi-white/keychron_k4_pro_ansi_white_via.bin",
+          "size": 53400,
+          "sha256": "38ee9c9c419ec3e113f3f4e1812b454f3081e6cabc49068fa50da99862fc40e3",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0241",
+          "file": "firmware/k4_pro/iso-rgb/keychron_k4_pro_iso_rgb_via.bin",
+          "size": 61892,
+          "sha256": "ed4eeccd61d02b02398f2fd6715a01cfa9c61e08842eee4efc9c90c6e030d15d",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0244",
+          "file": "firmware/k4_pro/iso-white/keychron_k4_pro_iso_white_via.bin",
+          "size": 53320,
+          "sha256": "0192f0fd05abb6d8de053a0eba7564589ffe60b5fbbd03215084e929f72672d4",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k4_version_3",
+      "name": "K4 Version 3",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0D40",
+          "file": "firmware/k4_version_3/ansi-rgb/keychron_k4_version_3_ansi_rgb_via.bin",
+          "size": 67572,
+          "sha256": "e9bf2cdcc41d2dd9569752f920540f950da2df862e99cc25728e0f362b8b7d21",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0D43",
+          "file": "firmware/k4_version_3/ansi-white/keychron_k4_version_3_ansi_white_via.bin",
+          "size": 60060,
+          "sha256": "f892ce68020dbc1b5d1224c24503d3611494358206f00f6d61cfd3772a477358",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0D41",
+          "file": "firmware/k4_version_3/iso-rgb/keychron_k4_version_3_iso_rgb_via.bin",
+          "size": 67580,
+          "sha256": "abfa76c06d3c6da83d24111a05f333c24bbdc3677256954b7799ca5f0be685b7",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0D44",
+          "file": "firmware/k4_version_3/iso-white/keychron_k4_version_3_iso_white_via.bin",
+          "size": 60076,
+          "sha256": "05ab15202566c02fd7caece93a3a973bcccc91c348f1d74ca5262147d8cbf3ce",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0D42",
+          "file": "firmware/k4_version_3/jis-rgb/keychron_k4_version_3_jis_rgb_via.bin",
+          "size": 67596,
+          "sha256": "c51a8d90e388a0b5bde380d563f98f64aa052ae39649a93e2427d29f974b1f45",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0D45",
+          "file": "firmware/k4_version_3/jis-white/keychron_k4_version_3_jis_white_via.bin",
+          "size": 60080,
+          "sha256": "79cea61074627420b85b86531c255f97530b4400e94f9db6c42cb08386bae263",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k5_max",
+      "name": "K5 Max",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0A50",
+          "file": "firmware/k5_max/ansi-rgb/keychron_k5_max_ansi_rgb_via.bin",
+          "size": 96752,
+          "sha256": "f03db61caf97fdad4d485a4d058b4e6b3835bfd0ba27b5b571e24e547a2c39f4",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0A53",
+          "file": "firmware/k5_max/ansi-white/keychron_k5_max_ansi_white_via.bin",
+          "size": 88340,
+          "sha256": "53e1b538493af43f452c48fcaa4e183312dbaf273d483e4d3c6963e95e370eec",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0A51",
+          "file": "firmware/k5_max/iso-rgb/keychron_k5_max_iso_rgb_via.bin",
+          "size": 96760,
+          "sha256": "e8bfdf6c233529eb51b515fea2ab97263c9fa6ee68dc0a4e04090ae62051435e",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0A54",
+          "file": "firmware/k5_max/iso-white/keychron_k5_max_iso_white_via.bin",
+          "size": 88348,
+          "sha256": "f929a53ea4717da24b76a88e2a53ec1094712b2aaa049ffcc759a530952eeb3d",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k5_pro",
+      "name": "K5 Pro",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0250",
+          "file": "firmware/k5_pro/ansi-rgb/keychron_k5_pro_ansi_rgb_via.bin",
+          "size": 62320,
+          "sha256": "26b1f3e57f78a0e274905e1c1abd9e554f573f9262828fda1ec55e1591bc265b",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0253",
+          "file": "firmware/k5_pro/ansi-white/keychron_k5_pro_ansi_white_via.bin",
+          "size": 53836,
+          "sha256": "ff17322004063d8326aaedb5e4c95ee02d0adc15b03e086a7455c7407e8a877d",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0251",
+          "file": "firmware/k5_pro/iso-rgb/keychron_k5_pro_iso_rgb_via.bin",
+          "size": 62336,
+          "sha256": "af50b1d85af3750a7ecc6ee7e3aab47e7b81951eaffd7572504333f60e84d3f8",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0254",
+          "file": "firmware/k5_pro/iso-white/keychron_k5_pro_iso_white_via.bin",
+          "size": 53836,
+          "sha256": "8053088cbf4c03ec784e4b9d36d23d23105c57b1c69589a55cd95195ba92af00",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0252",
+          "file": "firmware/k5_pro/jis-rgb/keychron_k5_pro_jis_rgb_via.bin",
+          "size": 62352,
+          "sha256": "c740d4d1032718fc3102bddee540ccf2b7fd0281d2f1d95f24e2eb7063028a3b",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0255",
+          "file": "firmware/k5_pro/jis-white/keychron_k5_pro_jis_white_via.bin",
+          "size": 53856,
+          "sha256": "ef0fb20b632a07aea186b530b4f0a083bcc84e28adcfb917075b8e25cb84cecc",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k5_version_2",
+      "name": "K5 Version 2",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0D50",
+          "file": "firmware/k5_version_2/ansi-rgb/keychron_k5_version_2_ansi_rgb_via.bin",
+          "size": 67908,
+          "sha256": "08ef3fc1e4bfe22b9fa0e7018d1714ce10a9b0440d1f364bb53679d57b03227d",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0D53",
+          "file": "firmware/k5_version_2/ansi-white/keychron_k5_version_2_ansi_white_via.bin",
+          "size": 60360,
+          "sha256": "4a4fe51afbeae58e1cc0b0e33e52460499b1bd5a4006b1a2d605d19cfb8e5f3b",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0D51",
+          "file": "firmware/k5_version_2/iso-rgb/keychron_k5_version_2_iso_rgb_via.bin",
+          "size": 67912,
+          "sha256": "ae44b4b2b588c210080d7fa1a352b27453ac12c0b8a572c0bcd8983376c1c32e",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0D54",
+          "file": "firmware/k5_version_2/iso-white/keychron_k5_version_2_iso_white_via.bin",
+          "size": 60364,
+          "sha256": "39cc4defc7c478cc97ff89bfe4324e74f9e47be128dbad1acef0e0d99234e019",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0D52",
+          "file": "firmware/k5_version_2/jis-rgb/keychron_k5_version_2_jis_rgb_via.bin",
+          "size": 67932,
+          "sha256": "911c3635135aa1effeec84bc1e5faaa563d3e60123d79bed4d5e96f754188919",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0D55",
+          "file": "firmware/k5_version_2/jis-white/keychron_k5_version_2_jis_white_via.bin",
+          "size": 60376,
+          "sha256": "298ebad520383614121bd19d17f731d740fe51446333a5df822ecebb25ee4eae",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k6_pro",
+      "name": "K6 Pro",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0260",
+          "file": "firmware/k6_pro/ansi-rgb/keychron_k6_pro_ansi_rgb_via.bin",
+          "size": 61248,
+          "sha256": "bec9a0825c9d0e476daac3de7c104503618b5d57d7245a95f8a433177899f67a",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0263",
+          "file": "firmware/k6_pro/ansi-white/keychron_k6_pro_ansi_white_via.bin",
+          "size": 52840,
+          "sha256": "893c92c82720dc868de00e14f1ebda03625a70cdb10927742444c1a6f8c73e00",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0261",
+          "file": "firmware/k6_pro/iso-rgb/keychron_k6_pro_iso_rgb_via.bin",
+          "size": 61272,
+          "sha256": "db07106904955544f3b457aad93dce6457466ab838e7898dd0d098187257dc10",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0264",
+          "file": "firmware/k6_pro/iso-white/keychron_k6_pro_iso_white_via.bin",
+          "size": 52836,
+          "sha256": "ea294e0e82c1e4af519a7e01708b4cd01d21451514a3b3bb63fb67c7813a85db",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0262",
+          "file": "firmware/k6_pro/jis-rgb/keychron_k6_pro_jis_rgb_via.bin",
+          "size": 61280,
+          "sha256": "f8f02ec118c50c4f7c3dc020b95df4584419341518044990c925bf82aac8b608",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k7_max",
+      "name": "K7 Max",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0A70",
+          "file": "firmware/k7_max/ansi-rgb/keychron_k7_max_ansi_rgb_via.bin",
+          "size": 95464,
+          "sha256": "8906d45aa8604ce5073b8c20e0978cb59e5417be8512c0e58e11915793035044",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0A73",
+          "file": "firmware/k7_max/ansi-white/keychron_k7_max_ansi_white_via.bin",
+          "size": 87140,
+          "sha256": "bcf9c2ac96f6f52eea4f5e13f74224e8cd9b5eba24fe8327a24066108337474f",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0A71",
+          "file": "firmware/k7_max/iso-rgb/keychron_k7_max_iso_rgb_via.bin",
+          "size": 95480,
+          "sha256": "a02593faa17fe22a05addd555b1e53a9d5aa18bc702a6ef7cc8e773ac8072342",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0A74",
+          "file": "firmware/k7_max/iso-white/keychron_k7_max_iso_white_via.bin",
+          "size": 87148,
+          "sha256": "87cec21492236d9866cdb9cc4e31afebfa90be39becf2aa90e048e477ed2fd0f",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0A72",
+          "file": "firmware/k7_max/jis-rgb/keychron_k7_max_jis_rgb_via.bin",
+          "size": 95488,
+          "sha256": "46123617743da92c0a75d2494e524ed64fb34837522ea61cb7f364e9359c213e",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0A75",
+          "file": "firmware/k7_max/jis-white/keychron_k7_max_jis_white_via.bin",
+          "size": 87152,
+          "sha256": "78afc5f9f2ddef35106d97da7ab2f4ecccc23a00a1227f4aff7bf441532625a8",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k7_pro",
+      "name": "K7 Pro",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0270",
+          "file": "firmware/k7_pro/ansi-rgb/keychron_k7_pro_ansi_rgb_via.bin",
+          "size": 62508,
+          "sha256": "e6ede41a7260a2e054e2abfe1e3c13a21ab1136de126b0638aadaca41b7f8139",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0273",
+          "file": "firmware/k7_pro/ansi-white/keychron_k7_pro_ansi_white_via.bin",
+          "size": 54100,
+          "sha256": "bc29cabd25890490753cb1d8f472c6a338dd80ec0faa954fe9f8958cd2e83b3b",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0271",
+          "file": "firmware/k7_pro/iso-rgb/keychron_k7_pro_iso_rgb_via.bin",
+          "size": 62532,
+          "sha256": "95f5a9bd41a8bb69c7e23733ee0604e5492302f8d8ecb79360e8f2946eac1285",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0274",
+          "file": "firmware/k7_pro/iso-white/keychron_k7_pro_iso_white_via.bin",
+          "size": 54100,
+          "sha256": "c9a55f85cdb64fa41aba34b5140965e59da3580a49b79123b44b20c430ffc6fb",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k8_max",
+      "name": "K8 Max",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0A80",
+          "file": "firmware/k8_max/ansi-rgb/keychron_k8_max_ansi_rgb_via.bin",
+          "size": 96232,
+          "sha256": "f0f43cb030e1bdcce56af21d4ba476040d8f1791f766fedb53df95b52207eb73",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0A83",
+          "file": "firmware/k8_max/ansi-white/keychron_k8_max_ansi_white_via.bin",
+          "size": 87872,
+          "sha256": "29aa79c7d318602d8e8ec73a836b4381176754b1eec0b673322b8fdf3fb7e575",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0A81",
+          "file": "firmware/k8_max/iso-rgb/keychron_k8_max_iso_rgb_via.bin",
+          "size": 96240,
+          "sha256": "69e5e94984a7288edd0b84964811aaf71ed186f29d8d9efdd55bd7294372000b",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0A84",
+          "file": "firmware/k8_max/iso-white/keychron_k8_max_iso_white_via.bin",
+          "size": 87876,
+          "sha256": "be259129914bbd18c32ddba51bc064554b39b9e420c61bf0e9476d3460f6d3f2",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0A82",
+          "file": "firmware/k8_max/jis-rgb/keychron_k8_max_jis_rgb_via.bin",
+          "size": 96260,
+          "sha256": "1b51e2a73e5921361c769313ae3bf628c828b2cd249141edc456f598d405f2a4",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0A85",
+          "file": "firmware/k8_max/jis-white/keychron_k8_max_jis_white_via.bin",
+          "size": 87892,
+          "sha256": "81e366fcffd6790ffe58a9f59c63a1d9aa2ba63c75cc892d6fb2d6eb111f9c25",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k8_pro",
+      "name": "K8 Pro",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0280",
+          "file": "firmware/k8_pro/ansi-rgb/keychron_k8_pro_ansi_rgb_via.bin",
+          "size": 61640,
+          "sha256": "1c8f5fce4fe1a13a29098ed3a69fb46bde89ea59417c87b70febc084891db1a2",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0283",
+          "file": "firmware/k8_pro/ansi-white/keychron_k8_pro_ansi_white_via.bin",
+          "size": 53212,
+          "sha256": "539b737313298476e4830d6c4c84321b2db86b45d026376883b05d8cc1d115e4",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0281",
+          "file": "firmware/k8_pro/iso-rgb/keychron_k8_pro_iso_rgb_via.bin",
+          "size": 61656,
+          "sha256": "6e97a2fd2b9e41b88fee4783cb124144ff80832e43f89404513aa08cd82479c2",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0284",
+          "file": "firmware/k8_pro/iso-white/keychron_k8_pro_iso_white_via.bin",
+          "size": 53204,
+          "sha256": "bca93401f5b93a9b3a0f1b9e408b582c7e85f6d3e3b2e81abb790a458e74a0e9",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0282",
+          "file": "firmware/k8_pro/jis-rgb/keychron_k8_pro_jis_rgb_via.bin",
+          "size": 61676,
+          "sha256": "d657ceb349f66fad04bd917a05d6d05de3da7362901ea82c2242f3851059edc7",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0285",
+          "file": "firmware/k8_pro/jis-white/keychron_k8_pro_jis_white_via.bin",
+          "size": 53224,
+          "sha256": "339ba77750130d7a02f6f632cff3eb539daab9e386815b499d3c91a7e63c6eef",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k8_version_2",
+      "name": "K8 Version 2",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0D80",
+          "file": "firmware/k8_version_2/ansi-rgb/keychron_k8_version_2_ansi_rgb_via.bin",
+          "size": 67448,
+          "sha256": "c59cf18b379d5fdb11af51259bbb1071ca5f857bc647653e0597defc2deb38bb",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0D83",
+          "file": "firmware/k8_version_2/ansi-white/keychron_k8_version_2_ansi_white_via.bin",
+          "size": 59964,
+          "sha256": "3d951deb6c28f7657b01d88b677bb140ac4bfa29f7b49f4fb7fb98727e263944",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0D81",
+          "file": "firmware/k8_version_2/iso-rgb/keychron_k8_version_2_iso_rgb_via.bin",
+          "size": 67460,
+          "sha256": "70739a5afd50961d550a2ac1510498f57a5218f6ac2f47a3cb9922c3b8768dad",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0D84",
+          "file": "firmware/k8_version_2/iso-white/keychron_k8_version_2_iso_white_via.bin",
+          "size": 59972,
+          "sha256": "b9b3099f3835f894920dc92ab93afcd60668a1e0e741dd3fcc8260660e470457",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0D82",
+          "file": "firmware/k8_version_2/jis-rgb/keychron_k8_version_2_jis_rgb_via.bin",
+          "size": 67484,
+          "sha256": "7bca1f945df132dca770063d2a124a9a8aa71439aa655e333f17bc800f03ef4c",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0D85",
+          "file": "firmware/k8_version_2/jis-white/keychron_k8_version_2_jis_white_via.bin",
+          "size": 59992,
+          "sha256": "5ec10ca887a1e2ecd7ee855c06f68959b28a9b7273874d5f5a99c6fbdf6a58e2",
+          "mcu": "wb32-dfu",
+          "dfu_suffix": false,
+          "tested": false,
+          "tested_note": "WB32F3G71: imagen raw sin sufijo DFU; usar el flasheo WB32 correspondiente y revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "k9_pro",
+      "name": "K9 Pro",
+      "variants": [
+        {
+          "variant": "ansi/rgb",
+          "folder": "ansi-rgb",
+          "keymap": "via",
+          "pid": "0x0290",
+          "file": "firmware/k9_pro/ansi-rgb/keychron_k9_pro_ansi_rgb_via.bin",
+          "size": 61468,
+          "sha256": "f399d22524faf14091b56a9d82f6171468b5353d4d92c9538faa6d9ff161b891",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi/white",
+          "folder": "ansi-white",
+          "keymap": "via",
+          "pid": "0x0293",
+          "file": "firmware/k9_pro/ansi-white/keychron_k9_pro_ansi_white_via.bin",
+          "size": 53196,
+          "sha256": "0c5199e7d41325e729aa7503dace005d3e25c474636d0a5e2bdbd3010fe3362d",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/rgb",
+          "folder": "iso-rgb",
+          "keymap": "via",
+          "pid": "0x0291",
+          "file": "firmware/k9_pro/iso-rgb/keychron_k9_pro_iso_rgb_via.bin",
+          "size": 61472,
+          "sha256": "b5d52beeef118848c5005f5c9194161e8fb5f915cdd55f8380ec2e1197cbed3c",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso/white",
+          "folder": "iso-white",
+          "keymap": "via",
+          "pid": "0x0294",
+          "file": "firmware/k9_pro/iso-white/keychron_k9_pro_iso_white_via.bin",
+          "size": 53188,
+          "sha256": "450d33e4e82641d5a7853f493930817ccc7bf3e3af39fd87b40d06aabc507aa3",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/rgb",
+          "folder": "jis-rgb",
+          "keymap": "via",
+          "pid": "0x0292",
+          "file": "firmware/k9_pro/jis-rgb/keychron_k9_pro_jis_rgb_via.bin",
+          "size": 61684,
+          "sha256": "8b53f53ece2d81e771ca1dab046b627c3be983cd5af482d9b831a36942a23024",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis/white",
+          "folder": "jis-white",
+          "keymap": "via",
+          "pid": "0x0295",
+          "file": "firmware/k9_pro/jis-white/keychron_k9_pro_jis_white_via.bin",
+          "size": 53268,
+          "sha256": "204fd1d86e1ef85fe98af21ada130085760caa4fd18f30d5782094ca3de158a4",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q0_max",
+      "name": "Q0 Max",
+      "variants": [
+        {
+          "variant": "encoder",
+          "folder": "encoder",
+          "keymap": "via",
+          "pid": "0x0800",
+          "file": "firmware/q0_max/encoder/keychron_q0_max_encoder_via.bin",
+          "size": 95272,
+          "sha256": "ddba4b9742933951eec286cf57bda10f378472ac50dd12082e361aa09be51773",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q10_max",
+      "name": "Q10 Max",
       "variants": [
         {
           "variant": "ansi_encoder",
           "folder": "ansi_encoder",
           "keymap": "via",
-          "pid": "0x0620",
-          "file": "firmware/q2_pro/ansi_encoder/keychron_q2_pro_ansi_encoder_via.bin",
-          "size": 62036,
-          "sha256": "fc3d72a699e04f88b60c7b297061dfd855f52d2f2c9ede0c72d4efddc8922c86",
+          "pid": "0x08A0",
+          "file": "firmware/q10_max/ansi_encoder/keychron_q10_max_ansi_encoder_via.bin",
+          "size": 97116,
+          "sha256": "1f072ad9b9bda5779c151693e6cc0362c68bdd9a0be0d49ed5eb5044faeb37f3",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "iso_encoder",
           "folder": "iso_encoder",
           "keymap": "via",
-          "pid": "0x0621",
-          "file": "firmware/q2_pro/iso_encoder/keychron_q2_pro_iso_encoder_via.bin",
-          "size": 62060,
-          "sha256": "04100cc89116239677aec795436d2e2a732d6b147f082966d520e411600b19ad",
+          "pid": "0x08A1",
+          "file": "firmware/q10_max/iso_encoder/keychron_q10_max_iso_encoder_via.bin",
+          "size": 97124,
+          "sha256": "c13188eac9107df6c4803fce4d4b9a932074c04f5983c4773b1063ab41f1e5b8",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
-        }
-      ]
-    },
-    {
-      "model": "q3_pro",
-      "name": "Q3 Pro",
-      "variants": [
-        {
-          "variant": "ansi_encoder",
-          "folder": "ansi_encoder",
-          "keymap": "via",
-          "pid": "0x0633",
-          "file": "firmware/q3_pro/ansi_encoder/keychron_q3_pro_ansi_encoder_via.bin",
-          "size": 62376,
-          "sha256": "b2b38193644bdd4fba56f716535821642556f8769a01f20787c9b70a1320409f",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "ansi_encoder_se",
-          "folder": "ansi_encoder_se",
-          "keymap": "via",
-          "pid": "0x0630",
-          "file": "firmware/q3_pro/ansi_encoder_se/keychron_q3_pro_ansi_encoder_se_via.bin",
-          "size": 63028,
-          "sha256": "ddca816e74be5b04f4b31cea0ef8815ab860e7816f5679d92d00eac652e75d8c",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso_encoder",
-          "folder": "iso_encoder",
-          "keymap": "via",
-          "pid": "0x0634",
-          "file": "firmware/q3_pro/iso_encoder/keychron_q3_pro_iso_encoder_via.bin",
-          "size": 62416,
-          "sha256": "5cfe2773f951048bcb8e5f4dfcc4f0b8302ca3d6215b29203b27cce9e2afdbf4",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso_encoder_se",
-          "folder": "iso_encoder_se",
-          "keymap": "via",
-          "pid": "0x0631",
-          "file": "firmware/q3_pro/iso_encoder_se/keychron_q3_pro_iso_encoder_se_via.bin",
-          "size": 63044,
-          "sha256": "333dacedcd664afa559ae00144bb2e1908644ca6997058d78c73f5f82e453cf0",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "jis_encoder_se",
-          "folder": "jis_encoder_se",
-          "keymap": "via",
-          "pid": "0x0632",
-          "file": "firmware/q3_pro/jis_encoder_se/keychron_q3_pro_jis_encoder_se_via.bin",
-          "size": 63072,
-          "sha256": "1f3f43eb3b23831839f148ae35e80ab0f116117d865b12c4a255fa3417b508af",
-          "tested": false,
-          "tested_note": null
-        }
-      ]
-    },
-    {
-      "model": "q4_pro",
-      "name": "Q4 Pro",
-      "variants": [
-        {
-          "variant": "ansi",
-          "folder": "ansi",
-          "keymap": "via",
-          "pid": "0x0640",
-          "file": "firmware/q4_pro/ansi/keychron_q4_pro_ansi_via.bin",
-          "size": 60524,
-          "sha256": "4dd63dd7e483f6da2813f0a7f8d443578a2a8c5260428c08b836199922ff45b9",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso",
-          "folder": "iso",
-          "keymap": "via",
-          "pid": "0x0641",
-          "file": "firmware/q4_pro/iso/keychron_q4_pro_iso_via.bin",
-          "size": 60532,
-          "sha256": "6bea542c3a059c2898f54607099318d749aacb344e0567ad24f2e57e007334b6",
-          "tested": false,
-          "tested_note": null
-        }
-      ]
-    },
-    {
-      "model": "q5_pro",
-      "name": "Q5 Pro",
-      "variants": [
-        {
-          "variant": "ansi_encoder",
-          "folder": "ansi_encoder",
-          "keymap": "via",
-          "pid": "0x0650",
-          "file": "firmware/q5_pro/ansi_encoder/keychron_q5_pro_ansi_encoder_via.bin",
-          "size": 62588,
-          "sha256": "bc039f563ef541132ed12365e7190a9e129ef9e2a3005698601ed4beb6fe4c43",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso_encoder",
-          "folder": "iso_encoder",
-          "keymap": "via",
-          "pid": "0x0651",
-          "file": "firmware/q5_pro/iso_encoder/keychron_q5_pro_iso_encoder_via.bin",
-          "size": 62600,
-          "sha256": "7777833183eaee73dfc30676567679d21f698e1f32b5f9a76fa25a4d031ecf43",
-          "tested": false,
-          "tested_note": null
-        }
-      ]
-    },
-    {
-      "model": "q6_pro",
-      "name": "Q6 Pro",
-      "variants": [
-        {
-          "variant": "ansi_encoder",
-          "folder": "ansi_encoder",
-          "keymap": "via",
-          "pid": "0x0660",
-          "file": "firmware/q6_pro/ansi_encoder/keychron_q6_pro_ansi_encoder_via.bin",
-          "size": 62968,
-          "sha256": "de481940fa5f79c29ba7371d173d0ad3fe2592f9ded4629f9d37abc4e2b36ddd",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso_encoder",
-          "folder": "iso_encoder",
-          "keymap": "via",
-          "pid": "0x0661",
-          "file": "firmware/q6_pro/iso_encoder/keychron_q6_pro_iso_encoder_via.bin",
-          "size": 62984,
-          "sha256": "c066fa3af67f06538d9482bdd03694afa87ea170d93b9d59c08a61026cd305d0",
-          "tested": false,
-          "tested_note": null
-        }
-      ]
-    },
-    {
-      "model": "q8_pro",
-      "name": "Q8 Pro",
-      "variants": [
-        {
-          "variant": "ansi_encoder",
-          "folder": "ansi_encoder",
-          "keymap": "via",
-          "pid": "0x0680",
-          "file": "firmware/q8_pro/ansi_encoder/keychron_q8_pro_ansi_encoder_via.bin",
-          "size": 62056,
-          "sha256": "a07d3fe6bd4688a1f2b157f7c4a0600f1106cca25278a488b981f8c0647f372f",
-          "tested": false,
-          "tested_note": null
-        },
-        {
-          "variant": "iso_encoder",
-          "folder": "iso_encoder",
-          "keymap": "via",
-          "pid": "0x0681",
-          "file": "firmware/q8_pro/iso_encoder/keychron_q8_pro_iso_encoder_via.bin",
-          "size": 62076,
-          "sha256": "e90b3d346e5193e159dac9c15ef28e56e835f52d4bcb36d3a7ca8cb3d72869ff",
-          "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
@@ -1139,10 +2520,12 @@
           "keymap": "via",
           "pid": "0x06A0",
           "file": "firmware/q10_pro/ansi_encoder/keychron_q10_pro_ansi_encoder_via.bin",
-          "size": 62248,
-          "sha256": "34da5c84fecb58f328daeb28ba21d50db5477242890a6c3739ecc83699fe9d83",
+          "size": 62576,
+          "sha256": "eb6de0270abc4c4f2883838b87d2704a286dfcdf13a15f6ac3642bb1e16ec078",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "iso_encoder",
@@ -1150,10 +2533,50 @@
           "keymap": "via",
           "pid": "0x06A1",
           "file": "firmware/q10_pro/iso_encoder/keychron_q10_pro_iso_encoder_via.bin",
-          "size": 62260,
-          "sha256": "1f6b80aaf27ade5b094b7bf1c0611bd192503d2719eebb00426b58ea9858114b",
+          "size": 62588,
+          "sha256": "91b083fe97abed6b16707a814e4e2f0b525def0346af92eb1d467b240e357548",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q12_max",
+      "name": "Q12 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x08C3",
+          "file": "firmware/q12_max/ansi_encoder/keychron_q12_max_ansi_encoder_via.bin",
+          "size": 97452,
+          "sha256": "187dfe5faad8e70d8359d9b526a6f43c652c5c82340cc5035eb25a4c5a46e829",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q13_max",
+      "name": "Q13 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x08D0",
+          "file": "firmware/q13_max/ansi_encoder/keychron_q13_max_ansi_encoder_via.bin",
+          "size": 97640,
+          "sha256": "5d965f57d6828e5f4309eba5d2bd0400500362ab6b213b9f54f51c2079daaf40",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
@@ -1167,10 +2590,12 @@
           "keymap": "via",
           "pid": "0x06D0",
           "file": "firmware/q13_pro/ansi_encoder/keychron_q13_pro_ansi_encoder_via.bin",
-          "size": 62608,
-          "sha256": "ae0679e90b1598912a6a6b3f933e6c00c3fb19e9dc1a73770390a181fcf949d2",
+          "size": 62936,
+          "sha256": "7978273e2b0d657e4530aa12b1d7c5f17673d2950943686d565a3b2d4ab07d01",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "iso_encoder",
@@ -1178,10 +2603,31 @@
           "keymap": "via",
           "pid": "0x06D1",
           "file": "firmware/q13_pro/iso_encoder/keychron_q13_pro_iso_encoder_via.bin",
-          "size": 62624,
-          "sha256": "5a922de93815d961118e686627c0e431c0add3231a0862239c548f9eebfba6e3",
+          "size": 62952,
+          "sha256": "9aca85d5138099fd1ad608834bff69a636233f0603477bfd97a5edf8d4b1f770",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q14_max",
+      "name": "Q14 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x08E0",
+          "file": "firmware/q14_max/ansi_encoder/keychron_q14_max_ansi_encoder_via.bin",
+          "size": 97616,
+          "sha256": "1abc0dfd45edb8f3181836d635f45d54550453f9f35fe745ac9105d2b7053a05",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     },
@@ -1195,10 +2641,12 @@
           "keymap": "via",
           "pid": "0x06E0",
           "file": "firmware/q14_pro/ansi_encoder/keychron_q14_pro_ansi_encoder_via.bin",
-          "size": 62564,
-          "sha256": "9c13ef22235782a4165b849e621d2afd4331a21a369636663a7fa946e375e5c9",
+          "size": 62900,
+          "sha256": "70655b1e618e9253a600442b91a52b15e826be85ea11f09157fd5e68b436dae8",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         },
         {
           "variant": "iso_encoder",
@@ -1206,10 +2654,767 @@
           "keymap": "via",
           "pid": "0x06E1",
           "file": "firmware/q14_pro/iso_encoder/keychron_q14_pro_iso_encoder_via.bin",
-          "size": 62588,
-          "sha256": "67293912ae02970e3481a3f95fee442d0338ab3d76af7d6e0b1da7314a115e9c",
+          "size": 62924,
+          "sha256": "ad91f1b31b799d81dc4ed898786ddba1a57053076c937f37d0aebad135401014",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
           "tested": false,
-          "tested_note": null
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q15_max",
+      "name": "Q15 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x08F0",
+          "file": "firmware/q15_max/ansi_encoder/keychron_q15_max_ansi_encoder_via.bin",
+          "size": 96960,
+          "sha256": "942ccdbb325ad5f6e479d1abda5f976d830f3078ff780f6b6a3810069accc715",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q1_max",
+      "name": "Q1 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0810",
+          "file": "firmware/q1_max/ansi_encoder/keychron_q1_max_ansi_encoder_via.bin",
+          "size": 97016,
+          "sha256": "5be967b61331890aeba9a0c46bdc2608a2581bcd3c5ce7619d3c4bad8e69cef3",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0811",
+          "file": "firmware/q1_max/iso_encoder/keychron_q1_max_iso_encoder_via.bin",
+          "size": 97016,
+          "sha256": "aa0ff768337790f78e4b2d9c6d3d523d5e8dba67a0ba3257839205c2ce86caaf",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis_encoder",
+          "folder": "jis_encoder",
+          "keymap": "via",
+          "pid": "0x0812",
+          "file": "firmware/q1_max/jis_encoder/keychron_q1_max_jis_encoder_via.bin",
+          "size": 97044,
+          "sha256": "f7697e29434fdc630ae78d88654c234113efa4d6c879dd1a8e0e9be1db6e39e4",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q1_pro",
+      "name": "Q1 Pro",
+      "variants": [
+        {
+          "variant": "ansi_knob",
+          "folder": "ansi_knob",
+          "keymap": "via",
+          "pid": "0x0610",
+          "file": "firmware/q1_pro/ansi_knob/keychron_q1_pro_ansi_knob_via.bin",
+          "size": 62472,
+          "sha256": "f934c3bf005466a4d80c6fa9b75904c0c890a80384b1a993ff40fa5c6187305e",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_knob",
+          "folder": "iso_knob",
+          "keymap": "via",
+          "pid": "0x0611",
+          "file": "firmware/q1_pro/iso_knob/keychron_q1_pro_iso_knob_via.bin",
+          "size": 62488,
+          "sha256": "191a1b7dab2e4aa1a502c1fcce4469b3a3040027c9c84a878645258254ce6cc3",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis_encoder",
+          "folder": "jis_encoder",
+          "keymap": "via",
+          "pid": "0xA612",
+          "file": "firmware/q1_pro/jis_encoder/keychron_q1_pro_jis_encoder_via.bin",
+          "size": 62512,
+          "sha256": "5863ee4cedb4432942e9451ac8ba1fa9a07bee24ab098689546bae0e95de53e3",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q2_max",
+      "name": "Q2 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0820",
+          "file": "firmware/q2_max/ansi_encoder/keychron_q2_max_ansi_encoder_via.bin",
+          "size": 96908,
+          "sha256": "cc6ea3da6e7339d769d109f4ef73096914d07a614fa242475ba5a7202a08975f",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0821",
+          "file": "firmware/q2_max/iso_encoder/keychron_q2_max_iso_encoder_via.bin",
+          "size": 96924,
+          "sha256": "51774c9ced76eb0e6d7dd8686e186ca970e363f2a352cf48eeb0489712a7e58a",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q2_pro",
+      "name": "Q2 Pro",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0620",
+          "file": "firmware/q2_pro/ansi_encoder/keychron_q2_pro_ansi_encoder_via.bin",
+          "size": 62372,
+          "sha256": "7ce847b3d7c8664656337c2c755108c0a69d0e38d42274b2fb1d738bee4d7d00",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0621",
+          "file": "firmware/q2_pro/iso_encoder/keychron_q2_pro_iso_encoder_via.bin",
+          "size": 62396,
+          "sha256": "2736aae50e675f824d8a3f0a48519453c3c1abc0b5a2b7f40d36019380dbffd6",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q3_max",
+      "name": "Q3 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0830",
+          "file": "firmware/q3_max/ansi_encoder/keychron_q3_max_ansi_encoder_via.bin",
+          "size": 97260,
+          "sha256": "dd4a383fcecc309c066c863a181eae021d4e41929845534908c170b0584a0276",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0831",
+          "file": "firmware/q3_max/iso_encoder/keychron_q3_max_iso_encoder_via.bin",
+          "size": 97268,
+          "sha256": "34f54aed6a337159d01f2bd21f373a0d8de156d0d236f475f970fabc102efcd0",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q3_pro",
+      "name": "Q3 Pro",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0633",
+          "file": "firmware/q3_pro/ansi_encoder/keychron_q3_pro_ansi_encoder_via.bin",
+          "size": 62704,
+          "sha256": "c3de4e54e056f4314f6a6cfee7ca6fb23a65a89a050c3d2658096a818cbbdc81",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "ansi_encoder_se",
+          "folder": "ansi_encoder_se",
+          "keymap": "via",
+          "pid": "0x0630",
+          "file": "firmware/q3_pro/ansi_encoder_se/keychron_q3_pro_ansi_encoder_se_via.bin",
+          "size": 63348,
+          "sha256": "af4fa9d87be88f2e9d12216169e407361011b4bcfd2e085a2182bea389631e8a",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0634",
+          "file": "firmware/q3_pro/iso_encoder/keychron_q3_pro_iso_encoder_via.bin",
+          "size": 62744,
+          "sha256": "0578dfc04268d8756ab9d068bb951fc944c3cd5b0ae8ec8bdd13d1ec79cdfa0d",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder_se",
+          "folder": "iso_encoder_se",
+          "keymap": "via",
+          "pid": "0x0631",
+          "file": "firmware/q3_pro/iso_encoder_se/keychron_q3_pro_iso_encoder_se_via.bin",
+          "size": 63364,
+          "sha256": "4fe0fdfaa7b09174d8ca64462fa1457f015236bd69ba1688a8f53415c54cf022",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis_encoder_se",
+          "folder": "jis_encoder_se",
+          "keymap": "via",
+          "pid": "0x0632",
+          "file": "firmware/q3_pro/jis_encoder_se/keychron_q3_pro_jis_encoder_se_via.bin",
+          "size": 63392,
+          "sha256": "dcfd505a813aa81e3a25003bc8c6dfae1438f62779f6f7b5c651364aaf907fd5",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q4_pro",
+      "name": "Q4 Pro",
+      "variants": [
+        {
+          "variant": "ansi",
+          "folder": "ansi",
+          "keymap": "via",
+          "pid": "0x0640",
+          "file": "firmware/q4_pro/ansi/keychron_q4_pro_ansi_via.bin",
+          "size": 60840,
+          "sha256": "5029bdf8a8c3bba369b01b6e1c0c695804e4bbee5b55f01e9d94c660aae2a3cb",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso",
+          "folder": "iso",
+          "keymap": "via",
+          "pid": "0x0641",
+          "file": "firmware/q4_pro/iso/keychron_q4_pro_iso_via.bin",
+          "size": 60848,
+          "sha256": "3a16327208169a03fcb13a824a3292e5ac898dc67f463e0172f7718ab94a3384",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q5_max",
+      "name": "Q5 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0850",
+          "file": "firmware/q5_max/ansi_encoder/keychron_q5_max_ansi_encoder_via.bin",
+          "size": 97440,
+          "sha256": "e7fbc967d145b70f58ce4a7b5cadf03605d30beecc42a8a8e90f5f74ad6ff341",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0851",
+          "file": "firmware/q5_max/iso_encoder/keychron_q5_max_iso_encoder_via.bin",
+          "size": 97448,
+          "sha256": "71153df5061d42129852f620ecafbb5c1fa13bd3f9a0729abb3e5f0b745bcf65",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q5_pro",
+      "name": "Q5 Pro",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0650",
+          "file": "firmware/q5_pro/ansi_encoder/keychron_q5_pro_ansi_encoder_via.bin",
+          "size": 62924,
+          "sha256": "8cfef98f6b28a697180e6bc014c35aed3552147abda2f29a72d47f7c26ead544",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0651",
+          "file": "firmware/q5_pro/iso_encoder/keychron_q5_pro_iso_encoder_via.bin",
+          "size": 62936,
+          "sha256": "7d171bcefe22bbf22af386f3bbdf0e77480481dd8c4ecec240b900a80cdf5505",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q60_max",
+      "name": "Q60 Max",
+      "variants": [
+        {
+          "variant": "ansi",
+          "folder": "ansi",
+          "keymap": "via",
+          "pid": "0x08C0",
+          "file": "firmware/q60_max/ansi/keychron_q60_max_ansi_via.bin",
+          "size": 95648,
+          "sha256": "8eeff714d11cb225db3d1f43ea8f030d90b76060dcd8058976daaa6ad0059aa3",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q65_max",
+      "name": "Q65 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x08B0",
+          "file": "firmware/q65_max/ansi_encoder/keychron_q65_max_ansi_encoder_via.bin",
+          "size": 96964,
+          "sha256": "18df4cf60c355637d156e1ee1802be37766fb46520fa26bfd6eba4fa7a2b3be2",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q6_max",
+      "name": "Q6 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0860",
+          "file": "firmware/q6_max/ansi_encoder/keychron_q6_max_ansi_encoder_via.bin",
+          "size": 97712,
+          "sha256": "eb638dd05fadb12973eff2de06bac22ad3bcc425d5861fdd65b36605f8e41d1f",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0861",
+          "file": "firmware/q6_max/iso_encoder/keychron_q6_max_iso_encoder_via.bin",
+          "size": 97720,
+          "sha256": "fa3c68887330dbcde417400fc7873fa79650ec4ab5537923e7ec8111b8635720",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q6_pro",
+      "name": "Q6 Pro",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0660",
+          "file": "firmware/q6_pro/ansi_encoder/keychron_q6_pro_ansi_encoder_via.bin",
+          "size": 63296,
+          "sha256": "cfef6a6749f8784010a548d5ec1467c9103f231b2352adc71f971348a19564eb",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0661",
+          "file": "firmware/q6_pro/iso_encoder/keychron_q6_pro_iso_encoder_via.bin",
+          "size": 63312,
+          "sha256": "ec3babe68ad6980f1abf856daab2828dd75ebff2a30f4c05908b4e82ad411d9b",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q8_max",
+      "name": "Q8 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0880",
+          "file": "firmware/q8_max/ansi_encoder/keychron_q8_max_ansi_encoder_via.bin",
+          "size": 96952,
+          "sha256": "836b9d690b9d9a674b06d4256d5f798dd5053177ddba351212a40646a967e80b",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "q8_pro",
+      "name": "Q8 Pro",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0680",
+          "file": "firmware/q8_pro/ansi_encoder/keychron_q8_pro_ansi_encoder_via.bin",
+          "size": 62392,
+          "sha256": "e10f68e29531efe0d47849ef72319c12484f5336389916dcd508fa9a13be7523",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0681",
+          "file": "firmware/q8_pro/iso_encoder/keychron_q8_pro_iso_encoder_via.bin",
+          "size": 62412,
+          "sha256": "d19f93fa0417eb375bf0524dca9125d34c562c7a72b9c5b42b72a7623ffb65b2",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "v10_max",
+      "name": "V10 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x09A0",
+          "file": "firmware/v10_max/ansi_encoder/keychron_v10_max_ansi_encoder_via.bin",
+          "size": 97428,
+          "sha256": "c4af59163644a329af839741f32014c531d8cec5e6664a711710ceabd2506d9f",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "v1_max",
+      "name": "V1 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0913",
+          "file": "firmware/v1_max/ansi_encoder/keychron_v1_max_ansi_encoder_via.bin",
+          "size": 97184,
+          "sha256": "c8a3b89ebaaba6e1a60daa4f03b4fd8b0b82c0eb07d1f5e17822499a2b9955b8",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0914",
+          "file": "firmware/v1_max/iso_encoder/keychron_v1_max_iso_encoder_via.bin",
+          "size": 97184,
+          "sha256": "45ca17ddb0d680c7aef6e84c01d46e435f565ffb21975a97fa1a5872f442843a",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "jis_encoder",
+          "folder": "jis_encoder",
+          "keymap": "via",
+          "pid": "0x0915",
+          "file": "firmware/v1_max/jis_encoder/keychron_v1_max_jis_encoder_via.bin",
+          "size": 97212,
+          "sha256": "859b80fd050ff1dbd4f299acd80cae4e949d136b924c60768b341a8d8aa69554",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "v2_max",
+      "name": "V2 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0920",
+          "file": "firmware/v2_max/ansi_encoder/keychron_v2_max_ansi_encoder_via.bin",
+          "size": 97084,
+          "sha256": "dec2c219fdc3c4af4939477ca70abf4f420a81762d23fc68b07e147f70f5c7de",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0921",
+          "file": "firmware/v2_max/iso_encoder/keychron_v2_max_iso_encoder_via.bin",
+          "size": 97096,
+          "sha256": "69355a342ee55a8eb9cd0a867977462154da8d13082fc5f7abb8276ce795e90d",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "v3_max",
+      "name": "V3 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0933",
+          "file": "firmware/v3_max/ansi_encoder/keychron_v3_max_ansi_encoder_via.bin",
+          "size": 97188,
+          "sha256": "d1796aef19333c2a6c0d0295c76336165e5bdb4e7a2614e07e85e51bd5e5d36f",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0934",
+          "file": "firmware/v3_max/iso_encoder/keychron_v3_max_iso_encoder_via.bin",
+          "size": 97196,
+          "sha256": "bdc4f0dbb3ed39f7e316136525bcee6cf2de7f0bfd08ddcc2410f0a690a05d40",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "v4_max",
+      "name": "V4 Max",
+      "variants": [
+        {
+          "variant": "ansi",
+          "folder": "ansi",
+          "keymap": "via",
+          "pid": "0x0940",
+          "file": "firmware/v4_max/ansi/keychron_v4_max_ansi_via.bin",
+          "size": 95632,
+          "sha256": "06d851fb392dead7317e3f468a6e4cad9b99ab218a82320037108c1d231cfe1e",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "v5_max",
+      "name": "V5 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0950",
+          "file": "firmware/v5_max/ansi_encoder/keychron_v5_max_ansi_encoder_via.bin",
+          "size": 97572,
+          "sha256": "03ff867b2e8f9330a8841fb5ed27954d8d0b31008e77d62f67cc902de5d7da34",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0951",
+          "file": "firmware/v5_max/iso_encoder/keychron_v5_max_iso_encoder_via.bin",
+          "size": 97572,
+          "sha256": "873c03e942e62b9cb35d1eb56e83aa9dc1996bce0f1dacbc641d285995d3b7b9",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "v6_max",
+      "name": "V6 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0960",
+          "file": "firmware/v6_max/ansi_encoder/keychron_v6_max_ansi_encoder_via.bin",
+          "size": 97772,
+          "sha256": "d28636489c6bca0ba5840b687f923df46a486db7ff2217c64eff490c817d3a6f",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        },
+        {
+          "variant": "iso_encoder",
+          "folder": "iso_encoder",
+          "keymap": "via",
+          "pid": "0x0961",
+          "file": "firmware/v6_max/iso_encoder/keychron_v6_max_iso_encoder_via.bin",
+          "size": 97776,
+          "sha256": "5a19ed88620539a75f3a896ea3782084dc5e783d3f304a2c2cbf5c33d8e8f8bc",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+        }
+      ]
+    },
+    {
+      "model": "v8_max",
+      "name": "V8 Max",
+      "variants": [
+        {
+          "variant": "ansi_encoder",
+          "folder": "ansi_encoder",
+          "keymap": "via",
+          "pid": "0x0980",
+          "file": "firmware/v8_max/ansi_encoder/keychron_v8_max_ansi_encoder_via.bin",
+          "size": 97256,
+          "sha256": "641c7f1dfbeb7fa67dcf022bf20cecdbd633bf275c898f0398e8d4506f2421e3",
+          "mcu": "stm32-dfu",
+          "dfu_suffix": true,
+          "tested": false,
+          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
         }
       ]
     }
