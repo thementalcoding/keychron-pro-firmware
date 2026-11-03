@@ -12,9 +12,11 @@ Full-range release: **67 Keychron wireless products**, **231 binary images**
 images). Based on Keychron `wls_2025q1` @ `c8b2b23` with the previous
 `v1.0.1-beta` work and the Claude audit patch series applied.
 
-> **Hardware validation: 1 unit.** Only the K13 Pro ISO RGB has been flashed and
-> used. The other 230 images compile and pass the automated DFU/CRC/size/manifest
-> checks, but have not been tested on hardware. LKBT51 has never been flashed.
+> **Hardware validation: 1 unit.** The **K13 Pro ISO RGB** (`0x02D1`) was
+> flashed with the v1.0.1 final bytes and post-DFU enumeration confirmed on
+> 2026-11-03. The other 230 images compile and pass the automated
+> DFU/CRC/size/manifest checks, but have not been tested on hardware. LKBT51 has
+> never been flashed.
 
 ### Added
 
@@ -27,6 +29,7 @@ images). Based on Keychron `wls_2025q1` @ `c8b2b23` with the previous
   and the LKBT51 read/parser/OTA/queue/LPM equivalents.
 - `v1.0.1-beta` is the previous local beta (Teclado2, build `2026-11-02a`,
   26 CKBT51 models / 95 images).
+- Claude audit findings are documented in `docs/CLAUDE_AUDIT.md`.
 
 ### Changed
 

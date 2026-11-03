@@ -41,8 +41,8 @@ jobs:
           git checkout "$BASE"
           git submodule update --init --depth 1 lib/chibios lib/chibios-contrib lib/printf lib/lufa
 
-      - name: Apply audit patch
-        run: cd /qmk && git apply --verbose "$GITHUB_WORKSPACE/patches/k13-audit.patch"
+      - name: Apply v1.0.1 final patch (beta tree + Claude audit fixes)
+        run: cd /qmk && git apply --verbose "$GITHUB_WORKSPACE/patches/final-v1.0.1.patch"
 
       - name: Build K13 Pro ISO RGB (via keymap)
         run: |

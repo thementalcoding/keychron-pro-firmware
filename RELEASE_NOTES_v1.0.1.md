@@ -45,17 +45,20 @@ LKBT51:
 ## Verification
 
 - 231/231 builds, 0 warnings.
-- Manifest: 67 models / 231 images / 0 tested.
+- Manifest: 67 models / 231 images / 1 tested.
 - `verify_bins.py`: 231/231 binary size, SHA-256 and DFU suffix checks pass
   (WB32F3G71 raw images intentionally have no DFU suffix).
 - `verify_manifest.py`, `verify_repo.py`, `sha256sum -c SHA256SUMS` and
   `check_sanitization.py` pass.
-- No hardware flashing was performed. The K13 ISO RGB hardware validation
-  applies to the previous beta bytes, not to these new images.
+- **K13 Pro ISO RGB (`0x02D1`) flashed with the v1.0.1 final bytes**; DFU was
+  correct and post-DFU enumeration confirmed on 2026-11-03. The keymap was
+  restored and works as before. The remaining 230 images have no hardware
+  report yet.
 
 ## DFU
 
 The MCU waits 500 ms after USB init before RGB/BT/keyboard init. On the K13 Pro
-ISO RGB this removed the first-boot-after-DFU enumeration failure in the beta.
-For the other models and for LKBT51 this is a defensive change pending hardware
-confirmation. The ROM bootloader remains recoverable by DFU on STM32 boards.
+ISO RGB this removed the first-boot-after-DFU enumeration failure and is now
+confirmed with the final v1.0.1 bytes. For the other models and for LKBT51 this
+remains a defensive change pending hardware confirmation. The ROM bootloader
+remains recoverable by DFU on STM32 boards.

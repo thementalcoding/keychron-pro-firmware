@@ -9,9 +9,9 @@
   "totals": {
     "models": 67,
     "variants": 231,
-    "tested": 0
+    "tested": 1
   },
-  "fix": "Claude audit patches: CKBT51 parser/OTA/LPM/queue + LKBT51 parser/OTA/queue/LPM; P5 USB enumeration wait retained and extended to LKBT51",
+  "fix": "Claude audit patches: CKBT51 parser/OTA/LPM/queue + LKBT51 parser/OTA/queue/LPM; P5 USB enumeration wait retained and extended to LKBT51. K13 Pro ISO RGB (PID 0x02D1) flashed and post-DFU enumeration confirmed 2026-11-03.",
   "models": [
     {
       "model": "k0_max",
@@ -530,8 +530,8 @@
           "sha256": "de9bbdc9c9cd31edcab3a242b8e67c6b0d81d57354904416d6bd4a1adc9cfe0c",
           "mcu": "stm32-dfu",
           "dfu_suffix": true,
-          "tested": false,
-          "tested_note": "Nuevo build v1.0.1 final: revalidar en hardware"
+          "tested": true,
+          "tested_note": "Post-DFU enumeration OK on hardware 2026-11-03 (v1.0.1 final)"
         },
         {
           "variant": "iso/white",
