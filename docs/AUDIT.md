@@ -394,9 +394,9 @@ debounce 5 ms. Los informes HID salen hacia el módulo con un buffer propio.
 
 ## 12. Ejecución SDD multiagente sobre `wls_2025q1` (25/10/2026 21:00–22:00)
 
-**Spec y roles:** `SDD_k13pro.md` (WP-000…900, gate §6). Roles definidos y
-persistidos en `.kilo/agent/` (`orchestrator`, `implementer`, `reviewer`,
-`tester`, `researcher`); esta sesión ejerció de orquestador con subagentes.
+**Spec y roles:** `SDD_k13pro.md` (WP-000…900, gate §6). Roles definidos para
+el flujo multiagente (`orchestrator`, `implementer`, `reviewer`, `tester`,
+`researcher`); esta sesión ejerció de orquestador con subagentes.
 
 **Referencia externa (WP-000, ZMK):** la práctica clave —"al perder el enlace:
 flush de estado + informe cero"— coincide con el fix WP-102a ya aplicado; los
