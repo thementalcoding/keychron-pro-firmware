@@ -26,8 +26,7 @@ expect.
 
 In scope:
 
-- The MCU firmware changes in `patches/k13-audit.patch` and the Claude audit
-  patch series (Bluetooth link handling, report queue, low-power gating, report
+- The MCU firmware changes in `patches/final-v1.0.1.patch` (Bluetooth link handling, report queue, low-power gating, report
   rate, OTA bounds, encoder synchronization, matrix output).
 - The `tools/` scripts: flashing helper, DFU suffix wrapper, polling
   measurement.

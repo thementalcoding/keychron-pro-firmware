@@ -43,10 +43,10 @@ sufijo DFU/CRC/tamaño en CI y se publican con su SHA-256. **No se ha probado
 ninguna otra unidad**, así que considera esas imágenes *sin probar* hasta que un
 reporte de la comunidad diga lo contrario.
 
-**Estado de campo (27-10-2026):** tras varios días de uso diario por Bluetooth en
-la unidad probada no ha habido episodios de ráfagas y la escritura se nota
-claramente mejor. Sigue siendo una sola unidad, así que la corrección no está
-confirmada a largo plazo.
+**Estado de campo (13-11-2026):** la unidad probada lleva unos 10 días con la
+v1.0.1 final en uso diario por Bluetooth sin cuelgues ni ráfagas, que sí ocurrían
+con el firmware de fábrica. Sigue siendo una sola unidad, así que la corrección
+no está confirmada para el resto de la gama.
 
 ¿Lo has flasheado? **[Repórtalo en 30 segundos →](https://github.com/thementalcoding/keychron-pro-firmware/issues/new?template=hardware_test.yml)**
 Los contadores de esta página se actualizan solos con esos reportes
@@ -296,7 +296,7 @@ python3 tools/verify_manifest.py        # coherencia manifest ↔ ficheros
 ```bash
 git clone https://github.com/thementalcoding/qmk_firmware.git
 cd qmk_firmware && git checkout k13-pro-bt-fixes
-# QMK CLI, arm-none-eabi-gcc 12–14; clang-format 19.x para paridad con CI
+# QMK CLI, arm-none-eabi-gcc 12–14; clang-format 14 (CI de QMK) para ficheros del core
 qmk compile -kb keychron/k13_pro/iso/rgb -km via
 ```
 
@@ -343,5 +343,5 @@ bytes** — una release nunca se re-sube con contenido distinto.
   (`wls_2025q1`) — QMK Firmware y ChibiOS son GPL-2.0.
 - Todos los cambios de este repositorio se publican bajo **GPL-2.0** (ver
   [LICENSE](LICENSE)).
-- Auditoría y notas de diseño: [`docs/AUDIT.md`](docs/AUDIT.md),
-  [`docs/SDD.md`](docs/SDD.md), [`docs/GAMA_AUDIT.md`](docs/GAMA_AUDIT.md).
+- Estado de la auditoría: [`docs/CLAUDE_AUDIT.md`](docs/CLAUDE_AUDIT.md);
+  auditorías y notas de diseño anteriores: [`docs/history/`](docs/history/README.md).

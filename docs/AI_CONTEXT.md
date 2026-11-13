@@ -1,187 +1,151 @@
 # AI context — architecture, invariants and backlog
 
-This document is written so an AI agent (or a new maintainer) can understand the
-project without re-reading the whole audit. It is deliberately factual and
-points to the authoritative files. `AGENTS.md` has the hard rules; this file has
-the *why* and the *what*.
+For an AI agent or new maintainer. `AGENTS.md` has the hard rules, `STATE.md`
+the current status, `CLAUDE_AUDIT.md` the per-finding status. This file has the
+*what* and the *why*. Older process records are in `history/`.
 
 ## 1. What this project is
 
-- **Hardware**: 26 Keychron *Pro* wireless keyboards (K1–K17 Pro, Q1–Q14 Pro),
-  all STM32L432 MCU + **CKBT51** Bluetooth BR/EDR module over UART (460800 baud).
-  The module runs **closed firmware**; the MCU runs QMK.
-- **Goal**: remove Bluetooth link defects that produce **bursts of repeated
-  keystrokes** and silent reconnects, and raise the report rate from 90 Hz to the
-  module's documented maximum (133 Hz).
-- **Baseline**: Keychron `qmk_firmware`, branch `wls_2025q1`, commit `c8b2b23`.
-- **Distribution**: source patch + prebuilt binaries (95 images, 26 models) in
-  this repository; upstream proposal in Keychron PR #529.
+- **Hardware:** 67 Keychron wireless products. 26 *Pro* boards (K1–K17 Pro,
+  Q1–Q14 Pro) use an STM32L432 plus the **CKBT51** Bluetooth module over UART
+  (460800 baud). 41 *Max*/*Version* boards use the **LKBT51** module over SPI.
+  Both modules run **closed firmware**; the MCU runs QMK.
+- **Goal:** remove link defects that caused **bursts of repeated keystrokes**,
+  freezes and silent reconnects, and raise the CKBT51 report rate from 90 Hz to
+  the module maximum (133 Hz).
+- **Baseline:** Keychron `qmk_firmware`, branch `wls_2025q1`, commit `c8b2b23`.
+- **Distribution:** source patch plus 231 prebuilt images in this repository;
+  upstream proposal in Keychron PR #529.
 
-## 2. Firmware change set (source of truth)
+## 2. Firmware change set
 
-> **Current source of truth (v1.0.1):** `patches/final-v1.0.1.patch`, the diff
-> from Keychron `wls_2025q1` @ `c8b2b23` to the PR #529 branch (59 files,
-> CKBT51 + LKBT51 + two opt-in core hooks: `USB_ENUMERATION_WAIT_MS` in
-> `tmk_core/protocol/chibios/chibios.c` and `ENCODER_QUADRATURE_ATOMIC_READ` in
-> `drivers/encoder/encoder_quadrature.c`, both enabled only by the Keychron
-> wireless makefiles). Per-finding status: `docs/CLAUDE_AUDIT.md`. The section
-> below describes the original v1.0.0 patch and is kept for history.
+Source of truth: `patches/final-v1.0.1.patch`, the diff from `c8b2b23` to the
+PR #529 branch (59 files). Per-ID detail: `CLAUDE_AUDIT.md`.
 
-`patches/k13-audit.patch` (v1.0.0; 33 files, all under `keyboards/keychron/`) contains:
+**CKBT51** (`keyboards/keychron/bluetooth/` + per-board files)
 
-**Shared link layer** (`keyboards/keychron/bluetooth/`)
+- UART parser bounded (length `3..64`), incomplete-frame timeout and
+  `ckbt51_rx_idle()`; OTA TX chunked and RX length-checked.
+- Report queue flushed on `EVT_RECONNECTING` and on host change: the **primary
+  burst fix** (a stale backlog was replayed after a lost disconnect event).
+- LPM: never enter STOP1 with a half-parsed frame, pending reports, retries or
+  events.
+- Retry guards for NKRO/consumer; PIN keys sent directly while pairing;
+  `bluetooth_connect()` rate-limited to one attempt per 500 ms; pairing timer
+  work moved out of the ISR.
+- `ckbt51_param_init()`: `report_rate` 90 → **133**, `reconnect_timeout` 5 →
+  **60 s**, applied on the first Bluetooth init (no uptime window).
+- Board fixes: K13 16-bit shift register output, HC595 DS→SHCP setup delay, Q3
+  column mask, q6_pro Fn+F3 factory reset removed, q1_pro BT name quoting and
+  reset-pin level (polarity unconfirmed).
 
-- `ckbt51.c`
-  - UART frame parser bounded: RX buffer `PACKET_MAX_LEN` (64), length accepted
-    only in `3..64`; legitimate 42-byte module-info and 42–61-byte OTA frames are
-    no longer dropped.
-  - `ckbt51_dfu_tx`: first USB packet chunked to `RAW_EPSIZE` (25 data bytes),
-    continuation frames `0x03` + ≤31 bytes in a loop; no silent truncation.
-- `bluetooth.c`
-  - Report buffer is flushed on `EVT_RECONNECTING` as well as disconnect. This is
-    the **primary burst fix**: after a lost disconnect event, a stale report
-    backlog used to be replayed on reconnect.
-  - Event queue overflow policy and retry-timer reset on module FIFO-full ACK
-    (no resend storm).
-  - `bluetooth_connect()` rate-limited to one attempt per 500 ms (sentinel 0 =
-    immediate first connect).
-- `report_buffer.c/.h`, `config.h`: supporting state/knobs.
-- `lpm.c`: never enter STOP1 while reports, retries or events are pending.
+**LKBT51** (`keyboards/keychron/common/wireless/`)
 
-**Per-board init** (26 × `*/​*_pro.c`)
+- `lkbt51_read()` bounded (was 68 bytes into 64-byte buffers), `0xAA 0x57`
+  parser validated, OTA TX chunked / RX bounded, queue flush on
+  reconnect/host/suspend, consumer retry guard, encoder wake ordering.
 
-- `ckbt51_param_init()`: `report_rate` 90 → **133**, `reconnect_timeout` 5 → **60 s**.
-- The old `sync_timer_read32() < 1000` (and k13_pro's 5000) uptime guard is
-  **removed**, so parameters are applied on the first Bluetooth init regardless
-  of boot timing. `firstDisconnect && get_port == TRANSPORT_BLUETOOTH`.
+**Core hooks** (opt-in; only the Keychron wireless makefiles enable them)
 
-**Board-specific fixes (v1.0.0)**
+- `USB_ENUMERATION_WAIT_MS=500` (`tmk_core/protocol/chibios/chibios.c`): fixes
+  the first USB enumeration after DFU (`-71`). Hardware-confirmed on K13 Pro.
+- `ENCODER_QUADRATURE_ATOMIC_READ` (`drivers/encoder/encoder_quadrature.c`):
+  the encoder pins are also read from a pin ISR.
 
-- `q6_pro.c`: removed `ckbt51_factory_reset()` from `case KC_TASK` (Fn+F3 on all
-  q6 keymaps wiped pairing/parameters).
-- `q1_pro.c`: `STR(PRODUCT)` → `PRODUCT` for the advertised Bluetooth name
-  (`:143` dead path and `:212`).
-
-**Explicitly untouched**
-
-- `common/wireless/*` (LKBT51 SPI stack) — different protocol, out of scope.
-- Closed CKBT51 module firmware.
-- Optional `CKBT51_FAST_WAKE` stays off by default.
+Not touched: the closed module firmware. `CKBT51_FAST_WAKE` stays off.
 
 ## 3. Published artefacts
 
-`firmware/` is **generated**, never hand-edited:
-
-- one folder per model, one subfolder per variant (`iso-rgb`, `ansi-white`, …),
-  containing `<keyboard>_<variant>_<keymap>.bin`;
-- keymap is `via` for every variant in this release (all 95 have one), so VIA /
-  Keychron Engine keeps working;
-- `manifest.json` and root `SHA256SUMS` are produced by
-  `tools/gen_firmware_docs.py` from a build report (`build-status.json`).
-
-See `docs/SCHEMAS.md` for the exact shapes.
+`firmware/` is **generated** (`tools/gen_firmware_docs.py`): one folder per
+model, one subfolder per variant, `<keyboard>_<variant>_via.bin`, plus
+`manifest.json` and root `SHA256SUMS`. Shapes: `SCHEMAS.md`. QMK embeds
+`QMK_BUILDDATE` (VIA EEPROM magic; LKBT51 also the full time), so a rebuild only
+matches bit for bit when built with the original timestamp.
 
 ## 4. Verification stack
 
 | Layer | Tool | What it proves |
 |---|---|---|
-| Binary | `tools/verify_bins.py` | DFU 1.1a suffix (`bcdDFU 0x0100`, `UFD`, len 16, CRC), VID/PID `0483:DF11`, size ≤ 256 KiB |
-| Tree | `tools/verify_manifest.py` | every manifest entry exists with matching size/hash, no orphan bins, totals, SHA256SUMS consistency, ≥1 tested |
+| Binary | `tools/verify_bins.py` | DFU 1.1a suffix, CRC, VID/PID `0483:DF11`, size; WB32 raw images exempt |
+| Tree | `tools/verify_manifest.py` | manifest ↔ files ↔ `SHA256SUMS`, totals 67/231, ≥1 tested |
 | Privacy | `tools/check_sanitization.py` | no MACs/hostnames/paths/IPs |
-| Docs/tests | `tools/verify_repo.py` | README↔manifest consistency, local links, seed hashes, summary rows |
-| Build | `.github/workflows/build.yml` | patch applies on `c8b2b23` and K13 + spot-check compile |
-| Parser | `tests/host/run_host_tests.sh` (CI job `host-tests`) | CKBT51/LKBT51 parsers survive oversized, truncated and malformed frames under ASan/UBSan; 9/9 patched, 8/9 fail on `c8b2b23` |
-| Polling tool | `tests/test_polling_multikey.py` (CI) | parser and batching logic of the polling test |
-| Upstream checks | QMK `qmk test-c`, `qmk lint`, `qmk format-c` (clang-format 14) on the PR branch | Keychron's PR workflows, which stay at `action_required` until a maintainer approves them; run locally before every push to the PR |
-| Reproducibility | rebuild with the embedded `QMK_BUILDDATE` | the 231 published images are bit-identical to a rebuild of the patched tree |
-| Upstream | Keychron PR #529 | human review by Keychron maintainers |
+| Docs | `tools/verify_repo.py` | README ↔ manifest, local links, seed hashes |
+| Build | `.github/workflows/build.yml` | patch applies on `c8b2b23`; K13 + spot-check compile |
+| Parser | `tests/host/run_host_tests.sh` | CKBT51/LKBT51 parsers under ASan/UBSan: 9/9 patched, 8/9 fail on `c8b2b23` |
+| Polling tool | `tests/test_polling_multikey.py` | parser and batching logic |
+| Upstream | `qmk test-c`, `qmk lint`, `qmk format-c` (clang-format 14) on the PR branch | what Keychron's PR workflows will run once approved |
 
-Measured on the only hardware-tested unit (K13 Pro ISO RGB, Linux 6.12, AX210):
-minimum inter-report gap **7 → 5 ms**, ceiling **~143 → ~200 reports/s**.
-Bursts: after several days of daily Bluetooth use, no episodes and typing feels
-markedly better; **single unit, so not confirmed long-term**.
+Field evidence (single unit, K13 Pro ISO RGB, v1.0.1 final): about 10 days of
+daily Bluetooth use to 2026-11-13 with no freezes or bursts. Polling p10
+~7 ms, consistent with the 133 Hz module ceiling. The old "5 ms / ~200
+reports/s" figure was a multi-key artefact and is withdrawn.
 
 ## 5. Test-report pipeline
 
 ```
-issue form (hardware_test.yml)
-   -> label hardware-test
-   -> tools/hardware_tests.py classify -> tested-ok | tested-problem
-   -> regenerate TESTED.md + docs/tested.json
-   -> push to the `tested-index` branch (main stays protected)
-   -> README badge (shields endpoint) reads the branch's JSON
+issue form (hardware_test.yml) -> label hardware-test
+  -> tools/hardware_tests.py classify -> tested-ok | tested-problem
+  -> TESTED.md + docs/tested.json on branch `tested-index` (main stays protected)
+  -> README badge (shields endpoint)
 ```
 
-Only reports with model + variant + 64-hex SHA-256 are counted. The maintainer
-seed (`docs/tested-seed.json`) is merged in. `tested: true` in the manifest must
-correspond to a real report/unit test.
+Only reports with model + variant + 64-hex SHA-256 count. `docs/tested-seed.json`
+holds the maintainer unit.
 
-## 6. Design decisions and their reasons
+## 6. Design decisions
 
 | Decision | Reason |
 |---|---|
-| Flush queue on `EVT_RECONNECTING`, not just disconnect | Root cause of burst replays; disconnect events can be lost |
-| 500 ms connect rate limit | Stops reconnect storms from slider/power toggles; one lost attempt in <500 ms toggles is documented |
+| Flush queue on `EVT_RECONNECTING`, not only on disconnect | Root cause of burst replays; disconnect events can be lost |
+| 500 ms connect rate limit | Stops reconnect storms; a BT→USB→BT toggle under 500 ms can lose one attempt |
 | LPM gate on pending work | STOP1 with a pending UART transaction dropped reports |
-| `report_rate` 133 Hz | Documented module maximum; measured +40 % ceiling |
-| `reconnect_timeout` 60 s | 5 s gave up during normal host sleep/resume |
-| Parameters on first BT init, no uptime window | Slow module boot / late switch to BT left factory defaults |
-| Untested images still published, clearly marked | Whole range benefits, but testing is community-driven; warnings everywhere |
-| Index on `tested-index` branch | `main` is protected; avoids giving the bot write bypass |
-| One upstream PR for 26 models | Shared code; per-model PRs would duplicate hunks and be rejected |
+| 133 Hz / 60 s reconnect | Module maximum; 5 s gave up during normal host sleep |
+| Parameters on first BT init | Slow module boot left factory defaults |
+| Core changes behind opt-in macros | Keeps QMK's other boards and unit tests unchanged |
+| Untested images published, clearly marked | Whole range benefits; testing is community-driven |
+| One upstream PR | Shared code; per-model PRs would duplicate hunks |
 
 ## 7. Backlog — analysed, not implemented
 
-Hardware-dependent items must be validated on a unit before shipping.
+Hardware-dependent items need a unit before shipping. Per-board detail:
+`history/PER_BOARD_REVIEW.md`.
 
 | ID | Item | Where | Risk | Notes |
 |---|---|---|---|---|
-| R3-02 | One-shot flag for `param_init` instead of uptime window | `*_pro.c` | Low | Window already removed; flag would re-send on later reconnects |
+| Q1-02 | q1_pro module reset pin (A9) level | `q1_pro` | Unknown | Now released high; polarity unconfirmed, **hardware/schematic only** |
+| Q3-02 | Q3 16-column map uses a 19-bit layout | `q3_pro` | Low | Needs schematic |
+| Q3-03 | Q3 EXTI4 shared between encoder and row | `q3_pro` | Low | Needs hardware |
+| LK-08 | k0_max mode-pin EXTI shares row lines | `k0_max` | Low | Needs hardware |
 | R3-03 | Clear `bat_empty` when voltage recovers | `bluetooth/battery.c` | Low | LEDs stuck until USB otherwise |
-| R3-04 | Debounce the Cable/BT mode pin | `*_pro.c` | Low | Slider bounce triggers multiple transport switches |
+| R3-04 | Debounce the Cable/BT mode pin | `*_pro.c` | Low | Slider bounce → several transport switches |
 | R3-05 | Event-queue overflow policy | `bluetooth/bluetooth.c` | Low | Dropping oldest may lose DISCONNECTED/RECONNECTING |
 | R3-06 | `CKBT51_FAST_WAKE` on + measure | `bluetooth/ckbt51.c` | Medium | ~3 ms per command; needs HW |
 | R3-07 | `usb_remote_wakeup()` timeout | `bluetooth/transport.c` | Medium | Host may ignore remote wake |
-| R3-08 | `reinit_led_drvier()` busy-wait 100 ms | `bluetooth/transport.c` | Low | Freezes scan/UART on transport change |
-| R3-09 | `HC595_delay(1)` ≈12.5 ns < 20 ns spec | board `matrix.c` | Low | Harden to 2–3 nops |
-| R3-10 | 17th column shift on `uint16_t` | `k13_pro/matrix.c` | Low | Phantom column after boot/wake |
-| R3-11 | Battery measure interval 3 s | `bluetooth/battery.h` | Low | Each measure = blocking UART |
-| R3-12 | `rtcGetTime` every loop | `bluetooth/rtc_timer.c` | None | Gate with timer |
+| R3-08 | `reinit_led_drvier()` busy-waits 100 ms | `bluetooth/transport.c` | Low | Freezes scan/UART on transport change |
+| R3-11 | Battery measured every 3 s | `bluetooth/battery.h` | Low | Each measure is a blocking UART exchange |
+| R3-12 | `rtcGetTime` every loop | `bluetooth/rtc_timer.c` | None | Gate with a timer |
 | R3-14 | Re-sync state with module after wake | `bluetooth/ckbt51.c` | Medium | Needs vendor register semantics |
-| PB-03 | q1_pro `CKBT51_RESET_PIN` (A9) LOW at boot | `q1_pro.c/config.h` | Unknown | Polarity unconfirmed; **hardware test only** |
+| PB-05 | q3_pro `_se` LED overlay rearmed on wake | `q3_pro/matrix.c` | Low | Vendor behaviour; leave |
 | PB-06 | k11_pro backlight timeout 30 s vs 600 s | `k11_pro` | Low | Vendor choice; leave |
-| PB-05 | q3_pro `_se` LED overlay rearmed on wake | `q3_pro/matrix.c` | Low | 3 s repeat per wake; leave |
 
-Full detail: `docs/PER_BOARD_REVIEW.md`, `docs/AUDIT.md`, `docs/SDD.md`.
+Done since v1.0.0 (removed from this list): R3-02 (uptime window), R3-09
+(HC595 setup, MTX-02), R3-10 (17th column shift, MTX-01), PB-03 (q1 reset pin,
+now Q1-02).
 
 ## 8. Known limitations
 
-- Single-unit hardware validation (K13 Pro ISO RGB only).
-- BT → USB → BT toggles under 500 ms can suppress one connect attempt.
-- Module parameters are sent on the first BT init after power-on, not per reconnect.
-- Some variants have no `via` keymap upstream (none in this release).
-- Radio-level issues (interference, adapter power saving) are outside this firmware.
+- Single-unit hardware validation (K13 Pro ISO RGB).
+- Module parameters are sent on the first BT init after power-on, not per
+  reconnect.
+- Radio-level issues (interference, adapter power saving) are outside this
+  firmware.
 
-## 9. How to extend (for an AI agent)
+## 9. How to extend
 
-1. Read `AGENTS.md` rules; check `git status` is clean.
-2. Change **source**, not `firmware/`.
-3. Fix one concern per commit; keep upstream style; clang-format 19.1.7.
-4. Rebuild affected variants + the K13/K14/Q1 spot checks; if a release is
-   intended, rebuild all 95.
-5. Regenerate `firmware/manifest.json`, `SHA256SUMS`, per-model READMEs with
-   `gen_firmware_docs.py`; run all verifiers.
-6. Update `docs/AI_CONTEXT.md` §7 if you implement or add a backlog item.
-7. Hardware-dependent? Stop, write it in the backlog with the test procedure.
-8. Open a PR against **this** repository (not Keychron) unless the change is
-   upstream-ready and the maintainer asked for an upstream PR.
-
-## 10. Glossary
-
-- **CKBT51**: Keychron Bluetooth BR/EDR module (closed firmware, UART control).
-- **LKBT51**: different Keychron wireless stack (SPI); out of scope.
-- **VIA**: keymap protocol used by VIA and Keychron Engine.
-- **DFU**: STM32 ROM bootloader at `0483:DF11`; cannot be erased.
-- **HC595**: shift-register column driver on most Pro boards; microsecond-scale
-  timing and glitch sensitivity.
-- **LPM/STOP1**: low-power MCU state; entering it with pending work loses reports.
+1. Read `AGENTS.md`; `git status` clean.
+2. Change source (the PR branch), never `firmware/`. One concern per commit.
+3. Run the upstream checks (§4) and the host tests.
+4. Rebuild: affected variants for review, all 231 for a release (new version).
+5. Regenerate `firmware/`, `manifest.json`, `SHA256SUMS` and
+   `patches/final-v1.0.1.patch` (or the new version's patch); run all verifiers.
+6. Hardware-dependent? Do not guess: add it to §7 with a test procedure.

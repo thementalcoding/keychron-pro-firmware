@@ -89,7 +89,7 @@ puerto USB del adaptador en un futuro.
 
 ## 7. Medición del polling rate
 
-Script incluido: [`../tools/medir_polling.py`](../tools/medir_polling.py)
+Script incluido: [`../tools/medir_polling.py`](../../tools/medir_polling.py)
 
 ```bash
 # opción A: con sudo (no requiere cambios permanentes)

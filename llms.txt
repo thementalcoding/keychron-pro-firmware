@@ -8,6 +8,7 @@
 ## Start here
 
 - [AGENTS.md](AGENTS.md): hard rules and definition of done for contributors/AI.
+- [docs/STATE.md](docs/STATE.md): current status and pending work.
 - [docs/AI_CONTEXT.md](docs/AI_CONTEXT.md): architecture, invariants, backlog.
 - [docs/SCHEMAS.md](docs/SCHEMAS.md): manifest, build status, test index, issue form contract.
 - [README.md](README.md) / [README.es.md](README.es.md): user documentation (EN/ES).
@@ -15,9 +16,9 @@
 
 ## Firmware
 
-- Source of truth: [patches/k13-audit.patch](patches/k13-audit.patch) plus the
-  Claude audit patch series documented in `reports/patches/` (base
-  `Keychron/qmk_firmware` @ `c8b2b23`).
+- Source of truth: [patches/final-v1.0.1.patch](patches/final-v1.0.1.patch)
+  on `Keychron/qmk_firmware` `wls_2025q1` @ `c8b2b23` (identical to the PR #529
+  branch). v1.0.0 patch kept as [patches/k13-audit.patch](patches/k13-audit.patch).
 - Published images: [firmware/manifest.json](firmware/manifest.json),
   [SHA256SUMS](SHA256SUMS), [firmware/](firmware/).
 - Release: https://github.com/thementalcoding/keychron-pro-firmware/releases/tag/v1.0.1
@@ -31,14 +32,14 @@ python3 tools/verify_bins.py
 python3 tools/verify_manifest.py
 sha256sum -c SHA256SUMS
 python3 tools/check_sanitization.py
+python3 tools/verify_repo.py
 ```
 
 ## Audit
 
-- [docs/AUDIT.md](docs/AUDIT.md) — root cause and design.
-- [docs/GAMA_AUDIT.md](docs/GAMA_AUDIT.md) — 26-board range audit.
-- [docs/PER_BOARD_REVIEW.md](docs/PER_BOARD_REVIEW.md) — per-board review and verdicts.
-- [docs/PR-529.md](docs/PR-529.md) — upstream PR notes.
+- [docs/CLAUDE_AUDIT.md](docs/CLAUDE_AUDIT.md) — per-finding status in v1.0.1.
+- [docs/PR_529_BODY.md](docs/PR_529_BODY.md) — current upstream PR description.
+- [docs/history/README.md](docs/history/README.md) — v1.0.0 audit, SDD and per-board reviews (background only).
 
 ## Testing and reporting
 
@@ -48,5 +49,4 @@ python3 tools/check_sanitization.py
 
 ## Optional
 
-- [docs/STATE.md](docs/STATE.md) — project state snapshot for resuming work.
 - [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md).
