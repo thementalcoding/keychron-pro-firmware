@@ -1,5 +1,5 @@
 diff --git a/drivers/encoder/encoder_quadrature.c b/drivers/encoder/encoder_quadrature.c
-index cc85d1c..385bb39 100644
+index cc85d1cdb5..60d89e6e8c 100644
 --- a/drivers/encoder/encoder_quadrature.c
 +++ b/drivers/encoder/encoder_quadrature.c
 @@ -9,6 +9,7 @@
@@ -10,20 +10,23 @@ index cc85d1c..385bb39 100644
  
  #ifdef SPLIT_KEYBOARD
  #    include "split_util.h"
-@@ -217,6 +218,10 @@ void encoder_quadrature_handle_inerrupt_read(uint8_t index) {
+@@ -217,6 +218,14 @@ void encoder_quadrature_handle_inerrupt_read(uint8_t index) {
  
  __attribute__((weak)) void encoder_driver_task(void) {
      for (uint8_t i = 0; i < thisCount; i++) {
--        encoder_quadrature_handle_read(i, encoder_quadrature_read_pin(i, false), encoder_quadrature_read_pin(i, true));
++#ifdef ENCODER_QUADRATURE_ATOMIC_READ
 +        /* Boards that also call encoder_quadrature_handle_inerrupt_read() from a pin ISR share
 +         * encoder_state/encoder_pulses with this path: read and update them atomically */
 +        ATOMIC_BLOCK_FORCEON {
 +            encoder_quadrature_handle_read(i, encoder_quadrature_read_pin(i, false), encoder_quadrature_read_pin(i, true));
 +        }
++#else
+         encoder_quadrature_handle_read(i, encoder_quadrature_read_pin(i, false), encoder_quadrature_read_pin(i, true));
++#endif
      }
  }
 diff --git a/keyboards/keychron/bluetooth/bluetooth.c b/keyboards/keychron/bluetooth/bluetooth.c
-index 2e280c7..d6c3671 100644
+index 2e280c7318..d6c367186f 100644
 --- a/keyboards/keychron/bluetooth/bluetooth.c
 +++ b/keyboards/keychron/bluetooth/bluetooth.c
 @@ -38,9 +38,8 @@ static uint8_t host_index = 0;
@@ -260,7 +263,7 @@ index 2e280c7..d6c3671 100644
  #ifndef DISABLE_REPORT_BUFFER
          report_buffer_task();
 diff --git a/keyboards/keychron/bluetooth/bluetooth.h b/keyboards/keychron/bluetooth/bluetooth.h
-index 26a4ea2..33be216 100644
+index 26a4ea2015..33be216791 100644
 --- a/keyboards/keychron/bluetooth/bluetooth.h
 +++ b/keyboards/keychron/bluetooth/bluetooth.h
 @@ -63,6 +63,7 @@ bool bluetooth_event_queue_enqueue(bluetooth_event_t event);
@@ -272,21 +275,23 @@ index 26a4ea2..33be216 100644
  
  void bluetooth_pairing(void);
 diff --git a/keyboards/keychron/bluetooth/bluetooth.mk b/keyboards/keychron/bluetooth/bluetooth.mk
-index c3021ed..dcfac50 100644
+index c3021ed2dd..bb25b21941 100644
 --- a/keyboards/keychron/bluetooth/bluetooth.mk
 +++ b/keyboards/keychron/bluetooth/bluetooth.mk
-@@ -1,6 +1,9 @@
+@@ -1,6 +1,11 @@
  
  OPT_DEFS += -DKC_BLUETOOTH_ENABLE
  OPT_DEFS += -DBLUETOOTH_NKRO_ENABLE
 +# Give the host time to complete USB enumeration before RGB/BT init runs.
 +# This avoids the first-boot-after-DFU SET_CONFIGURATION race on CKBT51 boards.
 +OPT_DEFS += -DUSB_ENUMERATION_WAIT_MS=500
++# The encoder pins are also read from a pin ISR (encoder_quadrature_handle_inerrupt_read()).
++OPT_DEFS += -DENCODER_QUADRATURE_ATOMIC_READ
  
  BLUETOOTH_DIR = bluetooth
  SRC += \
 diff --git a/keyboards/keychron/bluetooth/ckbt51.c b/keyboards/keychron/bluetooth/ckbt51.c
-index 76e6cab..953aa08 100644
+index 76e6cab388..953aa08def 100644
 --- a/keyboards/keychron/bluetooth/ckbt51.c
 +++ b/keyboards/keychron/bluetooth/ckbt51.c
 @@ -125,6 +125,11 @@ bluetooth_transport_t bluetooth_transport = {
@@ -605,7 +610,7 @@ index 76e6cab..953aa08 100644
      }
  }
 diff --git a/keyboards/keychron/bluetooth/ckbt51.h b/keyboards/keychron/bluetooth/ckbt51.h
-index 3458a22..dc0d2dd 100644
+index 3458a2242f..dc0d2dd585 100644
 --- a/keyboards/keychron/bluetooth/ckbt51.h
 +++ b/keyboards/keychron/bluetooth/ckbt51.h
 @@ -154,4 +154,6 @@ void ckbt51_dfu_rx(uint8_t* data, uint8_t length);
@@ -616,7 +621,7 @@ index 3458a22..dc0d2dd 100644
 +bool ckbt51_rx_idle(void);
  
 diff --git a/keyboards/keychron/bluetooth/lpm.c b/keyboards/keychron/bluetooth/lpm.c
-index 8089c56..b9064bc 100644
+index 8089c5650d..b9064bca11 100644
 --- a/keyboards/keychron/bluetooth/lpm.c
 +++ b/keyboards/keychron/bluetooth/lpm.c
 @@ -31,9 +31,14 @@
@@ -661,7 +666,7 @@ index 8089c56..b9064bc 100644
          enter_power_mode(LOW_POWER_MODE);
  }
 diff --git a/keyboards/keychron/bluetooth/lpm_stm32l432.c b/keyboards/keychron/bluetooth/lpm_stm32l432.c
-index bdc4684..36191fb 100644
+index bdc46844a9..36191fbf12 100644
 --- a/keyboards/keychron/bluetooth/lpm_stm32l432.c
 +++ b/keyboards/keychron/bluetooth/lpm_stm32l432.c
 @@ -30,6 +30,9 @@
@@ -687,7 +692,7 @@ index bdc4684..36191fb 100644
      SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
  
 diff --git a/keyboards/keychron/bluetooth/report_buffer.c b/keyboards/keychron/bluetooth/report_buffer.c
-index c98cb52..9dcd2b2 100644
+index c98cb52a02..9dcd2b2cd8 100644
 --- a/keyboards/keychron/bluetooth/report_buffer.c
 +++ b/keyboards/keychron/bluetooth/report_buffer.c
 @@ -45,20 +45,33 @@ uint8_t report_interval = DEFAULT_REPORT_INVERVAL_MS;
@@ -739,7 +744,7 @@ index c98cb52..9dcd2b2 100644
      if (bluetooth_get_state() == BLUETOOTH_CONNECTED && (!report_buffer_is_empty() || retry) && report_buffer_next_inverval()) {
          bool pending_data = false;
 diff --git a/keyboards/keychron/bluetooth/report_buffer.h b/keyboards/keychron/bluetooth/report_buffer.h
-index 2829de3..d800626 100644
+index 2829de3f46..d800626c90 100644
 --- a/keyboards/keychron/bluetooth/report_buffer.h
 +++ b/keyboards/keychron/bluetooth/report_buffer.h
 @@ -45,6 +45,7 @@ typedef struct {
@@ -757,7 +762,7 @@ index 2829de3..d800626 100644
 +void    report_buffer_reset_retry_timer(void);
  void    report_buffer_task(void);
 diff --git a/keyboards/keychron/common/matrix.c b/keyboards/keychron/common/matrix.c
-index d800810..be8ee8b 100644
+index d800810840..be8ee8b947 100644
 --- a/keyboards/keychron/common/matrix.c
 +++ b/keyboards/keychron/common/matrix.c
 @@ -89,6 +89,7 @@ static void HC595_output(SIZE_T data, bool bit_flag) {
@@ -769,7 +774,7 @@ index d800810..be8ee8b 100644
              HC595_delay(n);
              gpio_write_pin_low(HC595_SHCP);
 diff --git a/keyboards/keychron/common/wireless/lkbt51.c b/keyboards/keychron/common/wireless/lkbt51.c
-index ccf618c..d4f07ba 100644
+index ccf618c5cb..d4f07bac16 100644
 --- a/keyboards/keychron/common/wireless/lkbt51.c
 +++ b/keyboards/keychron/common/wireless/lkbt51.c
 @@ -312,6 +312,8 @@ void lkbt51_read(uint8_t* payload, uint8_t len) {
@@ -863,7 +868,7 @@ index ccf618c..d4f07ba 100644
          }
  
 diff --git a/keyboards/keychron/common/wireless/lpm.c b/keyboards/keychron/common/wireless/lpm.c
-index fc131fa..6d9cd4c 100644
+index fc131fa668..6d9cd4c7d8 100644
 --- a/keyboards/keychron/common/wireless/lpm.c
 +++ b/keyboards/keychron/common/wireless/lpm.c
 @@ -201,10 +201,6 @@ __attribute__((weak)) void lpm_wakeup(void) {
@@ -890,7 +895,7 @@ index fc131fa..6d9cd4c 100644
      invoked in matrix_init() alloc new memory to debounce_counters */
      debounce_free();
 diff --git a/keyboards/keychron/common/wireless/wireless.c b/keyboards/keychron/common/wireless/wireless.c
-index c5789d1..f0d6268 100644
+index c5789d1467..f0d62685ef 100644
 --- a/keyboards/keychron/common/wireless/wireless.c
 +++ b/keyboards/keychron/common/wireless/wireless.c
 @@ -162,6 +162,10 @@ void wireless_connect_ex(uint8_t host_idx, uint16_t timeout) {
@@ -935,21 +940,23 @@ index c5789d1..f0d6268 100644
              report_buffer_update_timer();
          } else {
 diff --git a/keyboards/keychron/common/wireless/wireless.mk b/keyboards/keychron/common/wireless/wireless.mk
-index 1a2be31..1ec2d89 100644
+index 1a2be31fc6..43e986ea4f 100644
 --- a/keyboards/keychron/common/wireless/wireless.mk
 +++ b/keyboards/keychron/common/wireless/wireless.mk
-@@ -2,6 +2,9 @@ OPT_DEFS += -DLK_WIRELESS_ENABLE
+@@ -2,6 +2,11 @@ OPT_DEFS += -DLK_WIRELESS_ENABLE
  OPT_DEFS += -DNO_USB_STARTUP_CHECK
  OPT_DEFS += -DCORTEX_ENABLE_WFI_IDLE=TRUE
  OPT_DEFS += -DWIRELESS_NKRO_ENABLE
-+# Same post-DFU USB enumeration guard used by the CKBT51 project release.
-+# LKBT51 has not been hardware-validated for DFU yet, but the USB stack is shared.
++# Give the host time to complete USB enumeration before RGB/wireless init runs.
++# Same post-DFU SET_CONFIGURATION guard as keyboards/keychron/bluetooth/bluetooth.mk.
 +OPT_DEFS += -DUSB_ENUMERATION_WAIT_MS=500
++# The encoder pins are also read from a pin ISR (encoder_quadrature_handle_inerrupt_read()).
++OPT_DEFS += -DENCODER_QUADRATURE_ATOMIC_READ
  
  INFO_RULES_MK = $(shell $(QMK_BIN) generate-rules-mk --quiet --escape --keyboard $(KEYBOARD) --output $(INTERMEDIATE_OUTPUT)/src/info_rules.mk)
  include $(INFO_RULES_MK)
 diff --git a/keyboards/keychron/k10_pro/k10_pro.c b/keyboards/keychron/k10_pro/k10_pro.c
-index 75377d3..adbd602 100644
+index 75377d38f0..adbd602b00 100644
 --- a/keyboards/keychron/k10_pro/k10_pro.c
 +++ b/keyboards/keychron/k10_pro/k10_pro.c
 @@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
@@ -1020,7 +1027,7 @@ index 75377d3..adbd602 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k11_pro/k11_pro.c b/keyboards/keychron/k11_pro/k11_pro.c
-index 4c58106..083538e 100644
+index 4c58106d7d..083538e901 100644
 --- a/keyboards/keychron/k11_pro/k11_pro.c
 +++ b/keyboards/keychron/k11_pro/k11_pro.c
 @@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
@@ -1100,7 +1107,7 @@ index 4c58106..083538e 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k11_pro/matrix.c b/keyboards/keychron/k11_pro/matrix.c
-index b02acd8..be34fbe 100644
+index b02acd81bc..be34fbecd7 100644
 --- a/keyboards/keychron/k11_pro/matrix.c
 +++ b/keyboards/keychron/k11_pro/matrix.c
 @@ -34,13 +34,17 @@ static inline uint8_t readMatrixPin(pin_t pin) {
@@ -1126,7 +1133,7 @@ index b02acd8..be34fbe 100644
  
  static inline void HC595_delay(uint16_t n) {
 diff --git a/keyboards/keychron/k12_pro/k12_pro.c b/keyboards/keychron/k12_pro/k12_pro.c
-index ca9df20..43d7ca3 100644
+index ca9df20e3e..43d7ca3175 100644
 --- a/keyboards/keychron/k12_pro/k12_pro.c
 +++ b/keyboards/keychron/k12_pro/k12_pro.c
 @@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
@@ -1197,7 +1204,7 @@ index ca9df20..43d7ca3 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k12_pro/matrix.c b/keyboards/keychron/k12_pro/matrix.c
-index 3c7a0e3..76ff2dd 100644
+index 3c7a0e3fed..76ff2dd1fd 100644
 --- a/keyboards/keychron/k12_pro/matrix.c
 +++ b/keyboards/keychron/k12_pro/matrix.c
 @@ -34,13 +34,17 @@ static inline uint8_t readMatrixPin(pin_t pin) {
@@ -1223,7 +1230,7 @@ index 3c7a0e3..76ff2dd 100644
  
  static inline void HC595_delay(uint16_t n) {
 diff --git a/keyboards/keychron/k13_pro/config.h b/keyboards/keychron/k13_pro/config.h
-index 639aedb..c7db344 100644
+index 639aedb4da..c7db344a2f 100644
 --- a/keyboards/keychron/k13_pro/config.h
 +++ b/keyboards/keychron/k13_pro/config.h
 @@ -21,8 +21,7 @@
@@ -1270,7 +1277,7 @@ index 639aedb..c7db344 100644
  
  /* Emulated EEPROM configuration */
 diff --git a/keyboards/keychron/k13_pro/k13_pro.c b/keyboards/keychron/k13_pro/k13_pro.c
-index f8ee9b6..84b0f13 100644
+index f8ee9b69a9..84b0f13d55 100644
 --- a/keyboards/keychron/k13_pro/k13_pro.c
 +++ b/keyboards/keychron/k13_pro/k13_pro.c
 @@ -54,8 +54,11 @@ bool                   firstDisconnect  = true;
@@ -1341,7 +1348,7 @@ index f8ee9b6..84b0f13 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k13_pro/matrix.c b/keyboards/keychron/k13_pro/matrix.c
-index e62c967..8317cf9 100644
+index e62c967bbf..8317cf99f9 100644
 --- a/keyboards/keychron/k13_pro/matrix.c
 +++ b/keyboards/keychron/k13_pro/matrix.c
 @@ -59,7 +59,8 @@ static inline void HC595_delay(uint16_t n) {
@@ -1371,21 +1378,21 @@ index e62c967..8317cf9 100644
          HC595_delay(1);
          gpio_write_pin_low(HC595_SHCP);
 diff --git a/keyboards/keychron/k13_pro/rules.mk b/keyboards/keychron/k13_pro/rules.mk
-index 1f9fc1a..1f8f0cd 100644
+index 1f9fc1ab58..b6fdd6d703 100644
 --- a/keyboards/keychron/k13_pro/rules.mk
 +++ b/keyboards/keychron/k13_pro/rules.mk
 @@ -2,6 +2,9 @@
  OPT_DEFS += -DCORTEX_ENABLE_WFI_IDLE=TRUE
  OPT_DEFS += -DNO_USB_STARTUP_CHECK -DENABLE_FACTORY_TEST
  
-+# Opt-in experiment (keep default sym_defer_g until measured on hardware with medir_polling.py):
++# Opt-in experiment (keep default sym_defer_g until it has been measured on hardware):
 +# DEBOUNCE_TYPE = asym_eager_defer_pk lowers press latency but can ghost on the shared HC595 bus
 +
  SRC += matrix.c
  
  include keyboards/keychron/bluetooth/bluetooth.mk
 diff --git a/keyboards/keychron/k14_pro/k14_pro.c b/keyboards/keychron/k14_pro/k14_pro.c
-index 879678e..5631f70 100644
+index 879678e3b8..5631f7024c 100644
 --- a/keyboards/keychron/k14_pro/k14_pro.c
 +++ b/keyboards/keychron/k14_pro/k14_pro.c
 @@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
@@ -1456,7 +1463,7 @@ index 879678e..5631f70 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k14_pro/matrix.c b/keyboards/keychron/k14_pro/matrix.c
-index 0b87717..a1e40e1 100644
+index 0b87717109..a1e40e19b0 100644
 --- a/keyboards/keychron/k14_pro/matrix.c
 +++ b/keyboards/keychron/k14_pro/matrix.c
 @@ -34,13 +34,17 @@ static inline uint8_t readMatrixPin(pin_t pin) {
@@ -1482,7 +1489,7 @@ index 0b87717..a1e40e1 100644
  
  static inline void HC595_delay(uint16_t n) {
 diff --git a/keyboards/keychron/k15_pro/k15_pro.c b/keyboards/keychron/k15_pro/k15_pro.c
-index 20c4922..4010f32 100644
+index 20c49228eb..4010f32f82 100644
 --- a/keyboards/keychron/k15_pro/k15_pro.c
 +++ b/keyboards/keychron/k15_pro/k15_pro.c
 @@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
@@ -1562,7 +1569,7 @@ index 20c4922..4010f32 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k17_pro/k17_pro.c b/keyboards/keychron/k17_pro/k17_pro.c
-index 339257e..f42da12 100644
+index 339257e4ff..f42da12ee2 100644
 --- a/keyboards/keychron/k17_pro/k17_pro.c
 +++ b/keyboards/keychron/k17_pro/k17_pro.c
 @@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
@@ -1671,7 +1678,7 @@ index 339257e..f42da12 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k17_pro/matrix.c b/keyboards/keychron/k17_pro/matrix.c
-index 42c1202..8163a37 100644
+index 42c1202ba4..8163a37cdf 100644
 --- a/keyboards/keychron/k17_pro/matrix.c
 +++ b/keyboards/keychron/k17_pro/matrix.c
 @@ -89,6 +89,7 @@ static void HC595_output(SIZE_T data, bool bit_flag) {
@@ -1683,7 +1690,7 @@ index 42c1202..8163a37 100644
              HC595_delay(n);
              gpio_write_pin_low(HC595_SHCP);
 diff --git a/keyboards/keychron/k1_pro/k1_pro.c b/keyboards/keychron/k1_pro/k1_pro.c
-index 1abee99..e41750a 100644
+index 1abee99e56..e41750a295 100644
 --- a/keyboards/keychron/k1_pro/k1_pro.c
 +++ b/keyboards/keychron/k1_pro/k1_pro.c
 @@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
@@ -1754,7 +1761,7 @@ index 1abee99..e41750a 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k1_pro/matrix.c b/keyboards/keychron/k1_pro/matrix.c
-index 4372058..791de0b 100644
+index 4372058eba..791de0b001 100644
 --- a/keyboards/keychron/k1_pro/matrix.c
 +++ b/keyboards/keychron/k1_pro/matrix.c
 @@ -34,13 +34,17 @@ static inline uint8_t readMatrixPin(pin_t pin) {
@@ -1780,7 +1787,7 @@ index 4372058..791de0b 100644
  
  static inline void HC595_delay(uint16_t n) {
 diff --git a/keyboards/keychron/k2_pro/k2_pro.c b/keyboards/keychron/k2_pro/k2_pro.c
-index 3b407d5..58f2339 100644
+index 3b407d5674..58f233918b 100644
 --- a/keyboards/keychron/k2_pro/k2_pro.c
 +++ b/keyboards/keychron/k2_pro/k2_pro.c
 @@ -52,8 +52,11 @@ bool                   firstDisconnect  = true;
@@ -1851,7 +1858,7 @@ index 3b407d5..58f2339 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k2_pro/matrix.c b/keyboards/keychron/k2_pro/matrix.c
-index 6c8e13e..5a685cd 100644
+index 6c8e13ef74..1ac2510067 100644
 --- a/keyboards/keychron/k2_pro/matrix.c
 +++ b/keyboards/keychron/k2_pro/matrix.c
 @@ -125,7 +125,8 @@ void matrix_read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
@@ -1859,7 +1866,7 @@ index 6c8e13e..5a685cd 100644
      }
  
 -    HC595_delay(100);
-+    /* v1.0.1: 200 nops de settle (antes 100) para margen contra ghosting en el bus HC595 */
++    /* Longer settle time (was 100) for the shared HC595 bus to avoid ghosting */
 +    HC595_delay(200);
  
      // For each row...
@@ -1874,7 +1881,7 @@ index 6c8e13e..5a685cd 100644
  
  void matrix_init_custom(void) {
 diff --git a/keyboards/keychron/k3_pro/k3_pro.c b/keyboards/keychron/k3_pro/k3_pro.c
-index e52a0ab..5bec580 100644
+index e52a0abc29..5bec580249 100644
 --- a/keyboards/keychron/k3_pro/k3_pro.c
 +++ b/keyboards/keychron/k3_pro/k3_pro.c
 @@ -52,8 +52,11 @@ bool                   firstDisconnect  = true;
@@ -1945,7 +1952,7 @@ index e52a0ab..5bec580 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k3_pro/matrix.c b/keyboards/keychron/k3_pro/matrix.c
-index 4bfedea..790f273 100644
+index 4bfedea5b2..c88d4c9ade 100644
 --- a/keyboards/keychron/k3_pro/matrix.c
 +++ b/keyboards/keychron/k3_pro/matrix.c
 @@ -142,7 +142,8 @@ void matrix_read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
@@ -1953,7 +1960,7 @@ index 4bfedea..790f273 100644
      }
  
 -    HC595_delay(100);
-+    /* v1.0.1: 200 nops de settle (antes 100) para margen contra ghosting en el bus HC595 */
++    /* Longer settle time (was 100) for the shared HC595 bus to avoid ghosting */
 +    HC595_delay(200);
  
      // For each row...
@@ -1968,7 +1975,7 @@ index 4bfedea..790f273 100644
  
  void matrix_init_custom(void) {
 diff --git a/keyboards/keychron/k4_pro/k4_pro.c b/keyboards/keychron/k4_pro/k4_pro.c
-index efce075..57cf23a 100644
+index efce075178..57cf23a1fd 100644
 --- a/keyboards/keychron/k4_pro/k4_pro.c
 +++ b/keyboards/keychron/k4_pro/k4_pro.c
 @@ -52,8 +52,11 @@ bool                   firstDisconnect  = true;
@@ -2039,7 +2046,7 @@ index efce075..57cf23a 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k4_pro/matrix.c b/keyboards/keychron/k4_pro/matrix.c
-index a24b1b0..3381f9b 100644
+index a24b1b05ed..d0c8d9b390 100644
 --- a/keyboards/keychron/k4_pro/matrix.c
 +++ b/keyboards/keychron/k4_pro/matrix.c
 @@ -122,7 +122,8 @@ void matrix_read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
@@ -2047,7 +2054,7 @@ index a24b1b0..3381f9b 100644
      }
  
 -    HC595_delay(100);
-+    /* v1.0.1: 200 nops de settle (antes 100) para margen contra ghosting en el bus HC595 */
++    /* Longer settle time (was 100) for the shared HC595 bus to avoid ghosting */
 +    HC595_delay(200);
  
      // For each row...
@@ -2062,7 +2069,7 @@ index a24b1b0..3381f9b 100644
  
  void matrix_init_custom(void) {
 diff --git a/keyboards/keychron/k5_pro/k5_pro.c b/keyboards/keychron/k5_pro/k5_pro.c
-index f80e48c..c07af36 100644
+index f80e48caae..c07af36664 100644
 --- a/keyboards/keychron/k5_pro/k5_pro.c
 +++ b/keyboards/keychron/k5_pro/k5_pro.c
 @@ -56,8 +56,11 @@ bool                   firstDisconnect  = true;
@@ -2133,7 +2140,7 @@ index f80e48c..c07af36 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k5_pro/matrix.c b/keyboards/keychron/k5_pro/matrix.c
-index 1b16944..19ef289 100644
+index 1b16944779..19ef2891dc 100644
 --- a/keyboards/keychron/k5_pro/matrix.c
 +++ b/keyboards/keychron/k5_pro/matrix.c
 @@ -34,13 +34,17 @@ static inline uint8_t readMatrixPin(pin_t pin) {
@@ -2159,7 +2166,7 @@ index 1b16944..19ef289 100644
  
  static inline void HC595_delay(uint16_t n) {
 diff --git a/keyboards/keychron/k6_pro/k6_pro.c b/keyboards/keychron/k6_pro/k6_pro.c
-index 2bce2c7..0371bee 100644
+index 2bce2c7ee1..0371beead4 100644
 --- a/keyboards/keychron/k6_pro/k6_pro.c
 +++ b/keyboards/keychron/k6_pro/k6_pro.c
 @@ -48,12 +48,15 @@ key_combination_t key_comb_list[4] = {
@@ -2253,7 +2260,7 @@ index 2bce2c7..0371bee 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k6_pro/matrix.c b/keyboards/keychron/k6_pro/matrix.c
-index e30a3a3..411f8df 100644
+index e30a3a3941..429d5be3be 100644
 --- a/keyboards/keychron/k6_pro/matrix.c
 +++ b/keyboards/keychron/k6_pro/matrix.c
 @@ -104,7 +104,8 @@ void matrix_read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
@@ -2261,7 +2268,7 @@ index e30a3a3..411f8df 100644
      }
  
 -    HC595_delay(100);
-+    /* v1.0.1: 200 nops de settle (antes 100) para margen contra ghosting en el bus HC595 */
++    /* Longer settle time (was 100) for the shared HC595 bus to avoid ghosting */
 +    HC595_delay(200);
  
      // For each row...
@@ -2276,7 +2283,7 @@ index e30a3a3..411f8df 100644
  
  void matrix_init_custom(void) {
 diff --git a/keyboards/keychron/k7_pro/k7_pro.c b/keyboards/keychron/k7_pro/k7_pro.c
-index a277ca4..a8ab8ce 100644
+index a277ca486b..a8ab8ce6c7 100644
 --- a/keyboards/keychron/k7_pro/k7_pro.c
 +++ b/keyboards/keychron/k7_pro/k7_pro.c
 @@ -55,8 +55,11 @@ bool                   firstDisconnect  = true;
@@ -2347,7 +2354,7 @@ index a277ca4..a8ab8ce 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k7_pro/matrix.c b/keyboards/keychron/k7_pro/matrix.c
-index cc2654d..730fe82 100644
+index cc2654d5ed..bcb0dbbbec 100644
 --- a/keyboards/keychron/k7_pro/matrix.c
 +++ b/keyboards/keychron/k7_pro/matrix.c
 @@ -143,7 +143,8 @@ void matrix_read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
@@ -2355,7 +2362,7 @@ index cc2654d..730fe82 100644
      }
  
 -    HC595_delay(100);
-+    /* v1.0.1: 200 nops de settle (antes 100) para margen contra ghosting en el bus HC595 */
++    /* Longer settle time (was 100) for the shared HC595 bus to avoid ghosting */
 +    HC595_delay(200);
  
      // For each row...
@@ -2370,7 +2377,7 @@ index cc2654d..730fe82 100644
  
  void matrix_init_custom(void) {
 diff --git a/keyboards/keychron/k8_pro/k8_pro.c b/keyboards/keychron/k8_pro/k8_pro.c
-index b6421be..7f37568 100644
+index b6421bed3b..7f375681a7 100644
 --- a/keyboards/keychron/k8_pro/k8_pro.c
 +++ b/keyboards/keychron/k8_pro/k8_pro.c
 @@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
@@ -2441,7 +2448,7 @@ index b6421be..7f37568 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k8_pro/matrix.c b/keyboards/keychron/k8_pro/matrix.c
-index 5ccaf09..57fa759 100644
+index 5ccaf09165..0755497ba2 100644
 --- a/keyboards/keychron/k8_pro/matrix.c
 +++ b/keyboards/keychron/k8_pro/matrix.c
 @@ -125,7 +125,8 @@ void matrix_read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
@@ -2449,7 +2456,7 @@ index 5ccaf09..57fa759 100644
      }
  
 -    HC595_delay(100);
-+    /* v1.0.1: 200 nops de settle (antes 100) para margen contra ghosting en el bus HC595 */
++    /* Longer settle time (was 100) for the shared HC595 bus to avoid ghosting */
 +    HC595_delay(200);
  
      // For each row...
@@ -2464,7 +2471,7 @@ index 5ccaf09..57fa759 100644
  
  void matrix_init_custom(void) {
 diff --git a/keyboards/keychron/k9_pro/k9_pro.c b/keyboards/keychron/k9_pro/k9_pro.c
-index 6a9acaa..4820ee2 100644
+index 6a9acaac1c..4820ee251d 100644
 --- a/keyboards/keychron/k9_pro/k9_pro.c
 +++ b/keyboards/keychron/k9_pro/k9_pro.c
 @@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
@@ -2535,7 +2542,7 @@ index 6a9acaa..4820ee2 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/k9_pro/matrix.c b/keyboards/keychron/k9_pro/matrix.c
-index fef2fba..ecd67f1 100644
+index fef2fbab1c..ecd67f1c3a 100644
 --- a/keyboards/keychron/k9_pro/matrix.c
 +++ b/keyboards/keychron/k9_pro/matrix.c
 @@ -68,6 +68,7 @@ static void HC595_output(uint16_t data) {
@@ -2555,7 +2562,7 @@ index fef2fba..ecd67f1 100644
          HC595_delay(1);
          gpio_write_pin_low(HC595_SHCP);
 diff --git a/keyboards/keychron/q10_pro/q10_pro.c b/keyboards/keychron/q10_pro/q10_pro.c
-index c85871d..cedee06 100644
+index c85871d1f0..cedee067b5 100644
 --- a/keyboards/keychron/q10_pro/q10_pro.c
 +++ b/keyboards/keychron/q10_pro/q10_pro.c
 @@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
@@ -2635,7 +2642,7 @@ index c85871d..cedee06 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/q13_pro/q13_pro.c b/keyboards/keychron/q13_pro/q13_pro.c
-index 0845d0c..d4aa15a 100644
+index 0845d0c0f0..d4aa15a96b 100644
 --- a/keyboards/keychron/q13_pro/q13_pro.c
 +++ b/keyboards/keychron/q13_pro/q13_pro.c
 @@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
@@ -2715,7 +2722,7 @@ index 0845d0c..d4aa15a 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/q14_pro/q14_pro.c b/keyboards/keychron/q14_pro/q14_pro.c
-index 8de4a84..5da4128 100644
+index 8de4a842c5..5da4128569 100644
 --- a/keyboards/keychron/q14_pro/q14_pro.c
 +++ b/keyboards/keychron/q14_pro/q14_pro.c
 @@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
@@ -2795,7 +2802,7 @@ index 8de4a84..5da4128 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/q1_pro/q1_pro.c b/keyboards/keychron/q1_pro/q1_pro.c
-index 781a8c2..ccf1955 100644
+index 781a8c2083..ccf195554b 100644
 --- a/keyboards/keychron/q1_pro/q1_pro.c
 +++ b/keyboards/keychron/q1_pro/q1_pro.c
 @@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
@@ -2912,7 +2919,7 @@ index 781a8c2..ccf1955 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/q2_pro/q2_pro.c b/keyboards/keychron/q2_pro/q2_pro.c
-index 2a2b8ed..71b47b9 100644
+index 2a2b8ede15..71b47b977b 100644
 --- a/keyboards/keychron/q2_pro/q2_pro.c
 +++ b/keyboards/keychron/q2_pro/q2_pro.c
 @@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
@@ -2992,7 +2999,7 @@ index 2a2b8ed..71b47b9 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/q3_pro/matrix.c b/keyboards/keychron/q3_pro/matrix.c
-index b6c61bb..8577d10 100644
+index b6c61bbb25..8577d10b82 100644
 --- a/keyboards/keychron/q3_pro/matrix.c
 +++ b/keyboards/keychron/q3_pro/matrix.c
 @@ -95,7 +95,7 @@ static bool select_col(uint8_t col) {
@@ -3005,7 +3012,7 @@ index b6c61bb..8577d10 100644
                  HC595_output((~(0x1 << (21 - col - 1))));
              }
 diff --git a/keyboards/keychron/q3_pro/q3_pro.c b/keyboards/keychron/q3_pro/q3_pro.c
-index 924edf1..e1b16f2 100644
+index 924edf1c28..e1b16f2c10 100644
 --- a/keyboards/keychron/q3_pro/q3_pro.c
 +++ b/keyboards/keychron/q3_pro/q3_pro.c
 @@ -56,8 +56,11 @@ bool                   firstDisconnect  = true;
@@ -3085,7 +3092,7 @@ index 924edf1..e1b16f2 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/q4_pro/q4_pro.c b/keyboards/keychron/q4_pro/q4_pro.c
-index a6ebd20..68adb86 100644
+index a6ebd20287..68adb86505 100644
 --- a/keyboards/keychron/q4_pro/q4_pro.c
 +++ b/keyboards/keychron/q4_pro/q4_pro.c
 @@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
@@ -3156,7 +3163,7 @@ index a6ebd20..68adb86 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/q5_pro/q5_pro.c b/keyboards/keychron/q5_pro/q5_pro.c
-index e828db3..c2fa596 100644
+index e828db32d1..c2fa59607f 100644
 --- a/keyboards/keychron/q5_pro/q5_pro.c
 +++ b/keyboards/keychron/q5_pro/q5_pro.c
 @@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
@@ -3236,7 +3243,7 @@ index e828db3..c2fa596 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/q6_pro/q6_pro.c b/keyboards/keychron/q6_pro/q6_pro.c
-index 16fb423..44f0f78 100644
+index 16fb423437..44f0f788ce 100644
 --- a/keyboards/keychron/q6_pro/q6_pro.c
 +++ b/keyboards/keychron/q6_pro/q6_pro.c
 @@ -53,8 +53,11 @@ bool                   firstDisconnect  = true;
@@ -3326,7 +3333,7 @@ index 16fb423..44f0f78 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/keyboards/keychron/q8_pro/q8_pro.c b/keyboards/keychron/q8_pro/q8_pro.c
-index 7f3f3b4..0c7e9fa 100644
+index 7f3f3b451a..0c7e9fab77 100644
 --- a/keyboards/keychron/q8_pro/q8_pro.c
 +++ b/keyboards/keychron/q8_pro/q8_pro.c
 @@ -50,8 +50,11 @@ bool                   firstDisconnect  = true;
@@ -3406,7 +3413,7 @@ index 7f3f3b4..0c7e9fa 100644
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
 diff --git a/tmk_core/protocol/chibios/chibios.c b/tmk_core/protocol/chibios/chibios.c
-index cf94815..0ae26b9 100644
+index cf948154f9..0ae26b9d35 100644
 --- a/tmk_core/protocol/chibios/chibios.c
 +++ b/tmk_core/protocol/chibios/chibios.c
 @@ -164,7 +164,11 @@ void protocol_pre_init(void) {

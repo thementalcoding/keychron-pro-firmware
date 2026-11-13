@@ -55,7 +55,39 @@ jobs:
         run: shellcheck -S warning tools/*.sh
 
       - name: Python syntax
-        run: python3 -m py_compile tools/*.py tools/dfu-suffix tools/medir_polling.py
+        run: python3 -m py_compile tools/*.py tools/dfu-suffix tools/medir_polling.py tests/*.py tests/host/*.py
+
+      - name: Polling test self-check and unit tests
+        run: |
+          python3 tools/polling_multikey_v0.0.1.py --self-test
+          python3 -m unittest discover -s tests -v
+
+      - name: Host test scripts
+        run: |
+          bash -n tests/host/run_host_tests.sh
+          shellcheck -S warning tests/host/run_host_tests.sh
 
       - name: Privacy guard (no personal data in the tree)
         run: python3 tools/check_sanitization.py
+
+  host-tests:
+    name: host parser tests (ASan/UBSan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Fetch the parser sources at the pinned Keychron base and apply the patch
+        run: |
+          set -euo pipefail
+          BASE=c8b2b237b4ef09765e48cbb5c1fdb0afd164289f
+          FILES="keyboards/keychron/bluetooth/ckbt51.c keyboards/keychron/common/wireless/lkbt51.c"
+          git init -q "$RUNNER_TEMP/qmk" && cd "$RUNNER_TEMP/qmk"
+          git remote add origin https://github.com/Keychron/qmk_firmware.git
+          git fetch -q --depth 1 --filter=blob:none origin "$BASE"
+          git checkout -q FETCH_HEAD -- $FILES
+          git apply $(printf -- '--include=%s ' $FILES) "$GITHUB_WORKSPACE/patches/final-v1.0.1.patch"
+
+      - name: Run CKBT51/LKBT51 parser tests
+        run: bash tests/host/run_host_tests.sh "$RUNNER_TEMP/qmk"
