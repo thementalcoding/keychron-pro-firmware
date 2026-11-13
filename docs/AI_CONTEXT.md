@@ -19,7 +19,15 @@ the *why* and the *what*.
 
 ## 2. Firmware change set (source of truth)
 
-`patches/k13-audit.patch` (33 files, all under `keyboards/keychron/`) contains:
+> **Current source of truth (v1.0.1):** `patches/final-v1.0.1.patch`, the diff
+> from Keychron `wls_2025q1` @ `c8b2b23` to the PR #529 branch (59 files,
+> CKBT51 + LKBT51 + two opt-in core hooks: `USB_ENUMERATION_WAIT_MS` in
+> `tmk_core/protocol/chibios/chibios.c` and `ENCODER_QUADRATURE_ATOMIC_READ` in
+> `drivers/encoder/encoder_quadrature.c`, both enabled only by the Keychron
+> wireless makefiles). Per-finding status: `docs/CLAUDE_AUDIT.md`. The section
+> below describes the original v1.0.0 patch and is kept for history.
+
+`patches/k13-audit.patch` (v1.0.0; 33 files, all under `keyboards/keychron/`) contains:
 
 **Shared link layer** (`keyboards/keychron/bluetooth/`)
 
@@ -82,6 +90,10 @@ See `docs/SCHEMAS.md` for the exact shapes.
 | Privacy | `tools/check_sanitization.py` | no MACs/hostnames/paths/IPs |
 | Docs/tests | `tools/verify_repo.py` | README↔manifest consistency, local links, seed hashes, summary rows |
 | Build | `.github/workflows/build.yml` | patch applies on `c8b2b23` and K13 + spot-check compile |
+| Parser | `tests/host/run_host_tests.sh` (CI job `host-tests`) | CKBT51/LKBT51 parsers survive oversized, truncated and malformed frames under ASan/UBSan; 9/9 patched, 8/9 fail on `c8b2b23` |
+| Polling tool | `tests/test_polling_multikey.py` (CI) | parser and batching logic of the polling test |
+| Upstream checks | QMK `qmk test-c`, `qmk lint`, `qmk format-c` (clang-format 14) on the PR branch | Keychron's PR workflows, which stay at `action_required` until a maintainer approves them; run locally before every push to the PR |
+| Reproducibility | rebuild with the embedded `QMK_BUILDDATE` | the 231 published images are bit-identical to a rebuild of the patched tree |
 | Upstream | Keychron PR #529 | human review by Keychron maintainers |
 
 Measured on the only hardware-tested unit (K13 Pro ISO RGB, Linux 6.12, AX210):

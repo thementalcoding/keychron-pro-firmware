@@ -1,4 +1,4 @@
-# Project state — v1.0.1 final (2026-11-03)
+# Project state — v1.0.1 final (updated 2026-11-13)
 
 Snapshot for resuming work. User-facing docs live in the README; this file is for
 maintainers, collaborators and AI agents.
@@ -16,7 +16,7 @@ maintainers, collaborators and AI agents.
 | Polling test | p10 **6.99 ms**, minimum **5.00 ms**, estimate **~143 reports/s**; consistent with the closed module ceiling of **~133 Hz** |
 | Manifest | **67 models / 231 images / 1 tested** |
 | Audit inputs | `reports/` (Claude); read-only, not modified |
-| Upstream PR | https://github.com/Keychron/qmk_firmware/pull/529 (8 commits, 59 files) |
+| Upstream PR | https://github.com/Keychron/qmk_firmware/pull/529 (8 commits, 59 files, head `2618f85`); no maintainer review yet, Keychron's workflows await approval |
 
 ## What is applied in v1.0.1 final
 
@@ -29,6 +29,10 @@ maintainers, collaborators and AI agents.
 - LKBT51: bounded `lkbt51_read()`, safe `0xAA 0x57` parser, chunked OTA TX, OTA
   RX length validation, queue flush on reconnect/host/suspend, consumer retry
   guard, encoder wake ordering, and the P5 USB enumeration wait.
+- Core hooks, opt-in and enabled only by the Keychron wireless makefiles:
+  `USB_ENUMERATION_WAIT_MS` (ChibiOS USB init) and
+  `ENCODER_QUADRATURE_ATOMIC_READ` (encoder driver). Until 2026-11-13 the encoder
+  change was unconditional and broke QMK's encoder unit tests.
 
 Findings and per-ID status: [`CLAUDE_AUDIT.md`](CLAUDE_AUDIT.md).
 
@@ -43,14 +47,22 @@ Findings and per-ID status: [`CLAUDE_AUDIT.md`](CLAUDE_AUDIT.md).
   restored. No other model has been flashed.
 - Polling test: p10 6.99 ms, min 5.00 ms; 143/s is the heuristic estimate, not a
   1000 Hz link.
+- Host parser tests (`tests/host/`, ASan/UBSan): 9/9 on the patched tree; the
+  Keychron base fails 8/9. Run in CI with the polling unit tests.
+- PR #529 branch, checked locally on 2026-11-13: `qmk test-c` passes, `qmk lint`
+  reports nothing beyond the findings already present on `c8b2b23`, and
+  `qmk format-c --core-only` (clang-format 14) requires no changes.
+- Reproducibility: QMK embeds `QMK_BUILDDATE` (VIA EEPROM magic; LKBT51 images
+  embed the full date and time). Rebuilt with each image's timestamp, all 231
+  published images are bit-identical. A plain rebuild changes every SHA-256.
 
 ## Pending
 
 1. Hardware validation for the other 230 images; LKBT51 has never been flashed.
 2. Field test of the Bluetooth symptoms (chatter, reconnect) over several days.
 3. `Q3-02`, `Q3-03` and `LK-08` need schematic/oscilloscope confirmation.
-4. Upstream PR #529: Keychron review.
-5. Dependabot PRs for GitHub Actions remain open; review/merge when convenient.
+4. Upstream PR #529: Keychron review (maintainer must approve the PR workflows).
+5. Dependabot PRs for GitHub Actions remain open (#2 and #3 asked to recreate after the history rewrite); review/merge when convenient.
 
 ## Fixed decisions
 
@@ -102,7 +114,14 @@ sudo python3 release/tools/polling_multikey_v0.0.1.py -t 10 -d /dev/input/eventX
 - Do not rewrite `reports/`; it is the Claude audit source of truth.
 - Check `docs/CLAUDE_AUDIT.md` before proposing a patch: some findings are already
   fixed by v1.0.0/v1.0.1-beta.
-- The local source tree is a git repo with `base: v1.0.1 beta` and
-  `v1.0.1 final: apply Claude audit fixes` commits; keep it clean.
+- The local source tree is a git repo (`base: v1.0.1 beta`, `v1.0.1 final`,
+  `v1.0.1: upstream-review cleanups`) and is identical to the PR #529 branch;
+  keep both in sync and regenerate `patches/final-v1.0.1.patch` after a change.
+- Commit as `TheMentalCoding <312162298+thementalcoding@users.noreply.github.com>`.
+  The history of `main` and the `v1.0.1` tag were rewritten on 2026-11-13 for
+  authorship only (same content); `main` is protected against force pushes.
+- Code that goes upstream: English comments, no internal references (audit
+  names, work-package IDs, release versions, local scripts), commit subjects of
+  72 characters or fewer.
 - The release tree is a clone of the public repo; commit/push only after the
   verifiers pass.
