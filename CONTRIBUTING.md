@@ -25,6 +25,19 @@ at the pinned base commit and compiles the ISO RGB `via` variant inside the
 `ghcr.io/qmk/qmk_cli` container, so a green build job means the patch still
 applies cleanly upstream.
 
+## Automated tests
+
+| Test | What it covers | Run locally |
+|---|---|---|
+| Host parser tests | `ckbt51_task()` and `lkbt51_read()`/`lkbt51_task()` from the patched tree, built with ASan/UBSan against a fake UART/SPI transport (oversized, truncated and malformed frames, STOP1 mid-frame) | `bash tests/host/run_host_tests.sh <patched qmk tree>` |
+| Polling unit tests | Parser and batching logic of the multikey polling test | `python3 -m unittest discover -s tests -v` |
+| QMK unit tests | QMK's own `qmk test-c` suite on the PR branch; the encoder tests cover the `encoder_quadrature.c` change | `qmk test-c` in the `qmk_firmware` checkout |
+| QMK lint/format | `qmk lint` on every touched board (no errors beyond the ones already present upstream) and `qmk format-c --core-only` with clang-format 14, as in Keychron's PR checks | see Keychron's `lint.yml`/`format.yml` |
+
+The host parser tests run in CI on every push. Run against Keychron's
+unpatched base they fail 8 of 9 cases (stack overflows and lost frames), which
+is the regression they guard against.
+
 ## Test matrix
 
 Every firmware change must build **all 67 models / 231 variants** before a

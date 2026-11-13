@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+No change to the published firmware images: all 231 rebuild bit-identical
+from the updated patch, with 0 warnings, when built with the original build
+timestamp (QMK embeds `QMK_BUILDDATE` in the image; LKBT51 images embed the
+full date and time).
+
+### Added
+
+- `tests/host/`: CKBT51/LKBT51 parser tests under ASan/UBSan, run in CI.
+- CI now runs the polling unit tests on every push, not only on pull requests.
+
+### Changed
+
+- `patches/final-v1.0.1.patch`: `encoder_quadrature.c` atomic read is opt-in
+  through `ENCODER_QUADRATURE_ATOMIC_READ` (enabled by the Keychron wireless
+  makefiles), so QMK's `qmk test-c` encoder tests build again; source comments
+  cleaned up for upstream review.
+
 ## [1.0.1] — 2026-11-03 (build a) — final
 
 Full-range release: **67 Keychron wireless products**, **231 binary images**

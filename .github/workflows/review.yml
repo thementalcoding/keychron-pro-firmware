@@ -27,7 +27,7 @@ jobs:
           python-version: "3.12"
 
       - name: Python syntax
-        run: python3 -m py_compile tools/*.py tools/dfu-suffix tools/medir_polling.py tests/*.py
+        run: python3 -m py_compile tools/*.py tools/dfu-suffix tools/medir_polling.py tests/*.py tests/host/*.py
 
       - name: Polling test self-check
         run: python3 tools/polling_multikey_v0.0.1.py --self-test
@@ -51,5 +51,5 @@ jobs:
 
       - name: Shell syntax and ShellCheck
         run: |
-          bash -n tools/*.sh
-          shellcheck -S warning tools/*.sh
+          bash -n tools/*.sh tests/host/*.sh
+          shellcheck -S warning tools/*.sh tests/host/*.sh

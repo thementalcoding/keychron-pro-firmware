@@ -1,5 +1,5 @@
 diff --git a/drivers/encoder/encoder_quadrature.c b/drivers/encoder/encoder_quadrature.c
-index cc85d1cd..385bb398 100644
+index cc85d1cd..60d89e6e 100644
 --- a/drivers/encoder/encoder_quadrature.c
 +++ b/drivers/encoder/encoder_quadrature.c
 @@ -9,6 +9,7 @@
@@ -10,16 +10,19 @@ index cc85d1cd..385bb398 100644
  
  #ifdef SPLIT_KEYBOARD
  #    include "split_util.h"
-@@ -217,6 +218,10 @@ void encoder_quadrature_handle_inerrupt_read(uint8_t index) {
+@@ -217,6 +218,14 @@ void encoder_quadrature_handle_inerrupt_read(uint8_t index) {
  
  __attribute__((weak)) void encoder_driver_task(void) {
      for (uint8_t i = 0; i < thisCount; i++) {
--        encoder_quadrature_handle_read(i, encoder_quadrature_read_pin(i, false), encoder_quadrature_read_pin(i, true));
++#ifdef ENCODER_QUADRATURE_ATOMIC_READ
 +        /* Boards that also call encoder_quadrature_handle_inerrupt_read() from a pin ISR share
 +         * encoder_state/encoder_pulses with this path: read and update them atomically */
 +        ATOMIC_BLOCK_FORCEON {
 +            encoder_quadrature_handle_read(i, encoder_quadrature_read_pin(i, false), encoder_quadrature_read_pin(i, true));
 +        }
++#else
+         encoder_quadrature_handle_read(i, encoder_quadrature_read_pin(i, false), encoder_quadrature_read_pin(i, true));
++#endif
      }
  }
 diff --git a/keyboards/keychron/bluetooth/bluetooth.c b/keyboards/keychron/bluetooth/bluetooth.c
@@ -141,6 +144,19 @@ index db6b6cea..d6c36718 100644
      }
  }
  
+diff --git a/keyboards/keychron/bluetooth/bluetooth.mk b/keyboards/keychron/bluetooth/bluetooth.mk
+index dcfac50a..bb25b219 100644
+--- a/keyboards/keychron/bluetooth/bluetooth.mk
++++ b/keyboards/keychron/bluetooth/bluetooth.mk
+@@ -4,6 +4,8 @@ OPT_DEFS += -DBLUETOOTH_NKRO_ENABLE
+ # Give the host time to complete USB enumeration before RGB/BT init runs.
+ # This avoids the first-boot-after-DFU SET_CONFIGURATION race on CKBT51 boards.
+ OPT_DEFS += -DUSB_ENUMERATION_WAIT_MS=500
++# The encoder pins are also read from a pin ISR (encoder_quadrature_handle_inerrupt_read()).
++OPT_DEFS += -DENCODER_QUADRATURE_ATOMIC_READ
+ 
+ BLUETOOTH_DIR = bluetooth
+ SRC += \
 diff --git a/keyboards/keychron/bluetooth/ckbt51.c b/keyboards/keychron/bluetooth/ckbt51.c
 index c41be326..953aa08d 100644
 --- a/keyboards/keychron/bluetooth/ckbt51.c
@@ -430,16 +446,18 @@ index c5789d14..f0d62685 100644
              report_buffer_update_timer();
          } else {
 diff --git a/keyboards/keychron/common/wireless/wireless.mk b/keyboards/keychron/common/wireless/wireless.mk
-index 1a2be31f..1ec2d890 100644
+index 1a2be31f..43e986ea 100644
 --- a/keyboards/keychron/common/wireless/wireless.mk
 +++ b/keyboards/keychron/common/wireless/wireless.mk
-@@ -2,6 +2,9 @@ OPT_DEFS += -DLK_WIRELESS_ENABLE
+@@ -2,6 +2,11 @@ OPT_DEFS += -DLK_WIRELESS_ENABLE
  OPT_DEFS += -DNO_USB_STARTUP_CHECK
  OPT_DEFS += -DCORTEX_ENABLE_WFI_IDLE=TRUE
  OPT_DEFS += -DWIRELESS_NKRO_ENABLE
-+# Same post-DFU USB enumeration guard used by the CKBT51 project release.
-+# LKBT51 has not been hardware-validated for DFU yet, but the USB stack is shared.
++# Give the host time to complete USB enumeration before RGB/wireless init runs.
++# Same post-DFU SET_CONFIGURATION guard as keyboards/keychron/bluetooth/bluetooth.mk.
 +OPT_DEFS += -DUSB_ENUMERATION_WAIT_MS=500
++# The encoder pins are also read from a pin ISR (encoder_quadrature_handle_inerrupt_read()).
++OPT_DEFS += -DENCODER_QUADRATURE_ATOMIC_READ
  
  INFO_RULES_MK = $(shell $(QMK_BIN) generate-rules-mk --quiet --escape --keyboard $(KEYBOARD) --output $(INTERMEDIATE_OUTPUT)/src/info_rules.mk)
  include $(INFO_RULES_MK)
@@ -593,6 +611,19 @@ index e62c967b..8317cf99 100644
          gpio_write_pin_high(HC595_SHCP);
          HC595_delay(1);
          gpio_write_pin_low(HC595_SHCP);
+diff --git a/keyboards/keychron/k13_pro/rules.mk b/keyboards/keychron/k13_pro/rules.mk
+index 1f8f0cd9..b6fdd6d7 100644
+--- a/keyboards/keychron/k13_pro/rules.mk
++++ b/keyboards/keychron/k13_pro/rules.mk
+@@ -2,7 +2,7 @@
+ OPT_DEFS += -DCORTEX_ENABLE_WFI_IDLE=TRUE
+ OPT_DEFS += -DNO_USB_STARTUP_CHECK -DENABLE_FACTORY_TEST
+ 
+-# Opt-in experiment (keep default sym_defer_g until measured on hardware with medir_polling.py):
++# Opt-in experiment (keep default sym_defer_g until it has been measured on hardware):
+ # DEBOUNCE_TYPE = asym_eager_defer_pk lowers press latency but can ghost on the shared HC595 bus
+ 
+ SRC += matrix.c
 diff --git a/keyboards/keychron/k14_pro/k14_pro.c b/keyboards/keychron/k14_pro/k14_pro.c
 index f2cfa9ff..5631f702 100644
 --- a/keyboards/keychron/k14_pro/k14_pro.c
@@ -755,6 +786,19 @@ index c9c5ee18..58f23391 100644
      if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k2_pro/matrix.c b/keyboards/keychron/k2_pro/matrix.c
+index 5a685cd9..1ac25100 100644
+--- a/keyboards/keychron/k2_pro/matrix.c
++++ b/keyboards/keychron/k2_pro/matrix.c
+@@ -125,7 +125,7 @@ void matrix_read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
+         return;                     // skip NO_PIN col
+     }
+ 
+-    /* v1.0.1: 200 nops de settle (antes 100) para margen contra ghosting en el bus HC595 */
++    /* Longer settle time (was 100) for the shared HC595 bus to avoid ghosting */
+     HC595_delay(200);
+ 
+     // For each row...
 diff --git a/keyboards/keychron/k3_pro/k3_pro.c b/keyboards/keychron/k3_pro/k3_pro.c
 index 23a58247..5bec5802 100644
 --- a/keyboards/keychron/k3_pro/k3_pro.c
@@ -785,6 +829,19 @@ index 23a58247..5bec5802 100644
      if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k3_pro/matrix.c b/keyboards/keychron/k3_pro/matrix.c
+index 790f2732..c88d4c9a 100644
+--- a/keyboards/keychron/k3_pro/matrix.c
++++ b/keyboards/keychron/k3_pro/matrix.c
+@@ -142,7 +142,7 @@ void matrix_read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
+         return;                     // skip NO_PIN col
+     }
+ 
+-    /* v1.0.1: 200 nops de settle (antes 100) para margen contra ghosting en el bus HC595 */
++    /* Longer settle time (was 100) for the shared HC595 bus to avoid ghosting */
+     HC595_delay(200);
+ 
+     // For each row...
 diff --git a/keyboards/keychron/k4_pro/k4_pro.c b/keyboards/keychron/k4_pro/k4_pro.c
 index 9ba77212..57cf23a1 100644
 --- a/keyboards/keychron/k4_pro/k4_pro.c
@@ -815,6 +872,19 @@ index 9ba77212..57cf23a1 100644
      if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k4_pro/matrix.c b/keyboards/keychron/k4_pro/matrix.c
+index 3381f9b5..d0c8d9b3 100644
+--- a/keyboards/keychron/k4_pro/matrix.c
++++ b/keyboards/keychron/k4_pro/matrix.c
+@@ -122,7 +122,7 @@ void matrix_read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
+         return;                     // skip NO_PIN col
+     }
+ 
+-    /* v1.0.1: 200 nops de settle (antes 100) para margen contra ghosting en el bus HC595 */
++    /* Longer settle time (was 100) for the shared HC595 bus to avoid ghosting */
+     HC595_delay(200);
+ 
+     // For each row...
 diff --git a/keyboards/keychron/k5_pro/k5_pro.c b/keyboards/keychron/k5_pro/k5_pro.c
 index bc66b742..c07af366 100644
 --- a/keyboards/keychron/k5_pro/k5_pro.c
@@ -875,6 +945,19 @@ index 34d5b031..0371beea 100644
      if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k6_pro/matrix.c b/keyboards/keychron/k6_pro/matrix.c
+index 411f8dff..429d5be3 100644
+--- a/keyboards/keychron/k6_pro/matrix.c
++++ b/keyboards/keychron/k6_pro/matrix.c
+@@ -104,7 +104,7 @@ void matrix_read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
+         return;                     // skip NO_PIN col
+     }
+ 
+-    /* v1.0.1: 200 nops de settle (antes 100) para margen contra ghosting en el bus HC595 */
++    /* Longer settle time (was 100) for the shared HC595 bus to avoid ghosting */
+     HC595_delay(200);
+ 
+     // For each row...
 diff --git a/keyboards/keychron/k7_pro/k7_pro.c b/keyboards/keychron/k7_pro/k7_pro.c
 index 1d490c49..a8ab8ce6 100644
 --- a/keyboards/keychron/k7_pro/k7_pro.c
@@ -905,6 +988,19 @@ index 1d490c49..a8ab8ce6 100644
      if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k7_pro/matrix.c b/keyboards/keychron/k7_pro/matrix.c
+index 730fe82d..bcb0dbbb 100644
+--- a/keyboards/keychron/k7_pro/matrix.c
++++ b/keyboards/keychron/k7_pro/matrix.c
+@@ -143,7 +143,7 @@ void matrix_read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
+         return;                     // skip NO_PIN col
+     }
+ 
+-    /* v1.0.1: 200 nops de settle (antes 100) para margen contra ghosting en el bus HC595 */
++    /* Longer settle time (was 100) for the shared HC595 bus to avoid ghosting */
+     HC595_delay(200);
+ 
+     // For each row...
 diff --git a/keyboards/keychron/k8_pro/k8_pro.c b/keyboards/keychron/k8_pro/k8_pro.c
 index abf73a98..7f375681 100644
 --- a/keyboards/keychron/k8_pro/k8_pro.c
@@ -935,6 +1031,19 @@ index abf73a98..7f375681 100644
      if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
          if (gpio_read_pin(USB_BT_MODE_SELECT_PIN) != mode) {
              mode = gpio_read_pin(USB_BT_MODE_SELECT_PIN);
+diff --git a/keyboards/keychron/k8_pro/matrix.c b/keyboards/keychron/k8_pro/matrix.c
+index 57fa759f..0755497b 100644
+--- a/keyboards/keychron/k8_pro/matrix.c
++++ b/keyboards/keychron/k8_pro/matrix.c
+@@ -125,7 +125,7 @@ void matrix_read_rows_on_col(matrix_row_t current_matrix[], uint8_t current_col)
+         return;                     // skip NO_PIN col
+     }
+ 
+-    /* v1.0.1: 200 nops de settle (antes 100) para margen contra ghosting en el bus HC595 */
++    /* Longer settle time (was 100) for the shared HC595 bus to avoid ghosting */
+     HC595_delay(200);
+ 
+     // For each row...
 diff --git a/keyboards/keychron/k9_pro/k9_pro.c b/keyboards/keychron/k9_pro/k9_pro.c
 index 863d779b..4820ee25 100644
 --- a/keyboards/keychron/k9_pro/k9_pro.c
