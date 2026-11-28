@@ -23,6 +23,13 @@ full date and time).
   through `ENCODER_QUADRATURE_ATOMIC_READ` (enabled by the Keychron wireless
   makefiles), so QMK's `qmk test-c` encoder tests build again; source comments
   cleaned up for upstream review.
+- Docs: process records from v1.0.0 (`AUDIT.md`, `SDD.md`, `GAMA_AUDIT.md`,
+  `PER_BOARD_REVIEW.md`, the first PR #529 text and `patches/notes*.md`) moved to
+  `docs/history/`; `STATE.md`, `AI_CONTEXT.md`, `AGENTS.md` and `llms.txt`
+  now point at `patches/final-v1.0.1.patch` as the source of truth and drop
+  duplicated content.
+- Field status: the tested K13 Pro ISO RGB has run about 10 days of daily
+  Bluetooth use with no freezes or key bursts (single unit).
 
 ## [1.0.1] — 2026-11-03 (build a) — final
 

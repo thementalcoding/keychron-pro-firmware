@@ -43,10 +43,10 @@ sufijo DFU/CRC/tamaño en CI y se publican con su SHA-256. **No se ha probado
 ninguna otra unidad**, así que considera esas imágenes *sin probar* hasta que un
 reporte de la comunidad diga lo contrario.
 
-**Estado de campo (27-10-2026):** tras varios días de uso diario por Bluetooth en
-la unidad probada no ha habido episodios de ráfagas y la escritura se nota
-claramente mejor. Sigue siendo una sola unidad, así que la corrección no está
-confirmada a largo plazo.
+**Estado de campo (13-11-2026):** la unidad probada lleva unos 10 días con la
+v1.0.1 final en uso diario por Bluetooth sin cuelgues ni ráfagas, que sí ocurrían
+con el firmware de fábrica. Sigue siendo una sola unidad, así que la corrección
+no está confirmada para el resto de la gama.
 
 ¿Lo has flasheado? **[Repórtalo en 30 segundos →](https://github.com/thementalcoding/keychron-pro-firmware/issues/new?template=hardware_test.yml)**
 Los contadores de esta página se actualizan solos con esos reportes
@@ -54,7 +54,7 @@ Los contadores de esta página se actualizan solos con esos reportes
 [rama `tested-index`](https://github.com/thementalcoding/keychron-pro-firmware/blob/tested-index/TESTED.md).
 
 <!-- BEGIN TESTED -->
-**1 reporte verificado · 1 modelo** (unidad del mantenedor, K13 Pro ISO RGB, v1.0.1 final, enumeración post-DFU OK 2026-11-03). Tabla en vivo: [tested-index](https://github.com/thementalcoding/keychron-pro-firmware/blob/tested-index/TESTED.md).
+**2 reportes verificados · 2 modelos** (unidad del mantenedor, K13 Pro ISO RGB, v1.0.1 final, enumeración post-DFU OK 2026-11-03; unidad de la comunidad, K1 Pro ISO RGB, solo USB, 2026-11-26). Tabla en vivo: [tested-index](https://github.com/thementalcoding/keychron-pro-firmware/blob/tested-index/TESTED.md).
 <!-- END TESTED -->
 
 ---
@@ -94,14 +94,14 @@ con sus PIDs, variantes y notas por fichero.
 | [K11 Pro](firmware/k11_pro/README.md) | 4 | `0x02B0`, `0x02B3`, `0x02B6`, `0x02B9` | 4 | no |
 | [K12 Pro](firmware/k12_pro/README.md) | 2 | `0x02C0`, `0x02C3` | 2 | no |
 | [K13 Max](firmware/k13_max/README.md) | 4 | `0x0AD0`, `0x0AD3`, `0x0AD1`, `0x0AD4` | 4 | no |
-| [K13 Pro](firmware/k13_pro/README.md) | 4 | `0x02D0`, `0x02D3`, `0x02D1`, `0x02D4` | 4 | ✅ ISO RGB |
+| [K13 Pro](firmware/k13_pro/README.md) | 4 | `0x02D0`, `0x02D3`, **`0x02D1`**, `0x02D4` | 4 | ✅ ISO RGB |
 | [K14 Pro](firmware/k14_pro/README.md) | 2 | `0x02E0`, `0x02E3` | 2 | no |
 | [K15 Max](firmware/k15_max/README.md) | 4 | `0x0AF0`, `0x0AF3`, `0x0AF1`, `0x0AF4` | 4 | no |
 | [K15 Pro](firmware/k15_pro/README.md) | 2 | `0x02F6`, `0x02F9` | 2 | no |
 | [K17 Max](firmware/k17_max/README.md) | 6 | `0x0A00`, `0x0A03`, `0x0A01`, `0x0A04`, `0x0A02`, `0x0A05` | 6 | no |
 | [K17 Pro](firmware/k17_pro/README.md) | 4 | `0x0206`, `0x0209`, `0x0207`, `0x020A` | 4 | no |
 | [K1 Max](firmware/k1_max/README.md) | 6 | `0x0A10`, `0x0A13`, `0x0A11`, `0x0A14`, `0x0A12`, `0x0A15` | 6 | no |
-| [K1 Pro](firmware/k1_pro/README.md) | 4 | `0x0210`, `0x0213`, `0x0211`, `0x0214` | 4 | no |
+| [K1 Pro](firmware/k1_pro/README.md) | 4 | `0x0210`, `0x0213`, **`0x0211`**, `0x0214` | 4 | ✅ ISO RGB |
 | [K1 Version 6](firmware/k1_version_6/README.md) | 6 | `0x0D10`, `0x0D13`, `0x0D11`, `0x0D14`, `0x0D12`, `0x0D15` | 6 | no |
 | [K2 Max](firmware/k2_max/README.md) | 6 | `0x0A20`, `0x0A23`, `0x0A21`, `0x0A24`, `0x0A22`, `0x0A25` | 6 | no |
 | [K2 Pro](firmware/k2_pro/README.md) | 6 | `0x0220`, `0x0223`, `0x0221`, `0x0224`, `0x0222`, `0x0225` | 6 | no |
@@ -296,7 +296,7 @@ python3 tools/verify_manifest.py        # coherencia manifest ↔ ficheros
 ```bash
 git clone https://github.com/thementalcoding/qmk_firmware.git
 cd qmk_firmware && git checkout k13-pro-bt-fixes
-# QMK CLI, arm-none-eabi-gcc 12–14; clang-format 19.x para paridad con CI
+# QMK CLI, arm-none-eabi-gcc 12–14; clang-format 14 (CI de QMK) para ficheros del core
 qmk compile -kb keychron/k13_pro/iso/rgb -km via
 ```
 
@@ -343,5 +343,5 @@ bytes** — una release nunca se re-sube con contenido distinto.
   (`wls_2025q1`) — QMK Firmware y ChibiOS son GPL-2.0.
 - Todos los cambios de este repositorio se publican bajo **GPL-2.0** (ver
   [LICENSE](LICENSE)).
-- Auditoría y notas de diseño: [`docs/AUDIT.md`](docs/AUDIT.md),
-  [`docs/SDD.md`](docs/SDD.md), [`docs/GAMA_AUDIT.md`](docs/GAMA_AUDIT.md).
+- Estado de la auditoría: [`docs/CLAUDE_AUDIT.md`](docs/CLAUDE_AUDIT.md);
+  auditorías y notas de diseño anteriores: [`docs/history/`](docs/history/README.md).
