@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: hardware-test-index
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   refresh:

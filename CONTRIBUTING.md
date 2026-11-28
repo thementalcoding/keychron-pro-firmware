@@ -125,14 +125,16 @@ entries to keep rebuilds reproducible.
 ## Style
 
 - Keep diffs minimal and focused; do not reformat unrelated code.
-- Follow upstream QMK style; the tree is checked with clang-format 19.x.
+- Follow upstream QMK style; core files are checked with `qmk format-c`
+  (clang-format 14, as in QMK's CI).
 
 ## Proposing MCU firmware changes
 
 1. Modify the source in your QMK checkout (branch `k13-pro-bt-fixes`).
 2. Rebuild the affected variants and regenerate `firmware/`,
    `firmware/manifest.json` and `SHA256SUMS`.
-3. Regenerate `patches/k13-audit.patch` from the diff against the base commit.
+3. Regenerate `patches/final-v1.0.1.patch` (or the new version's patch) from the
+   diff against the base commit `c8b2b23`.
 4. Open a PR; the Build (QMK) workflow verifies that the patch applies and that
    the resulting image passes `tools/verify_bins.py`.
 
