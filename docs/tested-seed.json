@@ -9,16 +9,5 @@
     "host": "Linux (maintainer unit)",
     "date": "2026-11-03",
     "source": "maintainer"
-  },
-  {
-    "model": "k1_pro",
-    "model_label": "K1 Pro",
-    "variant": "ISO RGB",
-    "pid": "0x0211",
-    "firmware": "keychron_k1_pro_iso_rgb_via.bin",
-    "sha256": "71efca082d3b386ff28991c2908f79d39a16c48da5b86f469f653ce96f867986",
-    "host": "macOS (community unit)",
-    "date": "2026-11-26",
-    "source": "community"
   }
 ]
