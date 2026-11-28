@@ -5,9 +5,10 @@
 Unofficial build for the **K1 Pro** (CKBT51 · UART), based on
 Keychron `wls_2025q1` @ `c8b2b23` plus the Claude audit patch series.
 
-> **Untested on hardware.** This image compiles and passes the automated
-> DFU-suffix, CRC, size, manifest and checksum checks, but it has not been
-> flashed on this model. Report a result through the hardware-test form.
+> ✅ **Hardware-tested:** 1 variant(s) of this model were flashed on a
+> physical unit. See [TESTED](https://github.com/thementalcoding/keychron-pro-firmware/blob/tested-index/TESTED.md).
+>
+> The other variants of this model are **untested builds**.
 
 ## Images
 
@@ -15,7 +16,7 @@ Keychron `wls_2025q1` @ `c8b2b23` plus the Claude audit patch series.
 |---|---|---|---|---|
 | `ansi/rgb` | `via` | `0x0210` | [`keychron_k1_pro_ansi_rgb_via.bin`](ansi-rgb/keychron_k1_pro_ansi_rgb_via.bin) | no |
 | `ansi/white` | `via` | `0x0213` | [`keychron_k1_pro_ansi_white_via.bin`](ansi-white/keychron_k1_pro_ansi_white_via.bin) | no |
-| `iso/rgb` | `via` | `0x0211` | [`keychron_k1_pro_iso_rgb_via.bin`](iso-rgb/keychron_k1_pro_iso_rgb_via.bin) | no |
+| `iso/rgb` | `via` | `0x0211` | [`keychron_k1_pro_iso_rgb_via.bin`](iso-rgb/keychron_k1_pro_iso_rgb_via.bin) | ✅ yes (1 unit) |
 | `iso/white` | `via` | `0x0214` | [`keychron_k1_pro_iso_white_via.bin`](iso-white/keychron_k1_pro_iso_white_via.bin) | no |
 
 ## Verify
